@@ -9,6 +9,7 @@ public class LlpTest {
 		LlpJava llpJava = new LlpJava();
 
 		llpJava.regMessage("test.mes.lpb");
+		llpJava.delMessage("test.mes.lpb");
 		LlpMessage mes = llpJava.getMessage("at");
 		LlpMessage mes2 = llpJava.getMessage("at");
 		long t1, t2;

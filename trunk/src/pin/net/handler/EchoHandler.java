@@ -11,6 +11,8 @@ public class EchoHandler extends SimpleChannelHandler {
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 			throws Exception {
 		ChannelBuffer buf = (ChannelBuffer)e.getMessage();
+		
+		
 		byte b = buf.readByte();
 		short s = buf.readShort();
 		int i = buf.readInt();
