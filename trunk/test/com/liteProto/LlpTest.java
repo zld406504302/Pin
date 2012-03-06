@@ -1,4 +1,7 @@
-package pin.net.liteProto;
+package com.liteProto;
+
+import com.liteProto.LlpJava;
+import com.liteProto.LlpMessage;
 
 public class LlpTest {
 
@@ -8,8 +11,8 @@ public class LlpTest {
 	public static void main(String[] args) throws Exception {
 		LlpJava llpJava = LlpJava.instance();
 
-		llpJava.regMessage("test.mes.lpb");
-		llpJava.delMessage("test.mes.lpb");
+		llpJava.regMessage("testLlp.mes.lpb");
+		//llpJava.delMessage("test.mes.lpb");
 		LlpMessage mes = llpJava.getMessage("at");
 		LlpMessage mes2 = llpJava.getMessage("at");
 		long t1, t2;

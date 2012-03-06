@@ -9,7 +9,9 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
-import pin.net.liteProto.LlpDecoder;
+import com.liteProto.LlpDecoder;
+
+import pin.net.handler.EchoHandler;
 
 public class NetService {
 
@@ -28,7 +30,7 @@ public class NetService {
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
-                return Channels.pipeline(new LlpDecoder());
+                return Channels.pipeline(new LlpDecoder(), new EchoHandler());
             }
         });
 

@@ -1,0 +1,9 @@
+#描述文本···
+message testLlpDataType {
+	int32 i32;       #有符号int32位
+	int64 i64;       #有符号int64位
+        float32 f32;    #float浮点
+        float64 f64;    #double浮点
+        string str;        #字符串
+	stream data;   #byte数组
+}

@@ -1,4 +1,4 @@
-package pin.net.liteProto;
+package com.liteProto;
 
 import java.io.UnsupportedEncodingException;
 
