@@ -6,6 +6,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
@@ -13,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Ğ­Òé¸ñÊ½Îª: frameLength(short) + msgName(utf) + llpMsg
+ * åè®®æ ¼å¼ä¸º: frameLength(short) + msgName(utf) + llpMsg
  * 
  * @author zhongyuan
  * 
@@ -31,47 +32,47 @@ public class LlpDecoder extends FrameDecoder {
 			return null;
 		}
 
-		// ¶ÁÈ¡frame³¤¶È×Ö¶Î
+		// è¯»å–frameé•¿åº¦å­—æ®µ
 		short frameLength = buffer.getShort(buffer.readerIndex());
 
 		if (frameLength <= 4) {
-			buffer.skipBytes(2);// ³¤¶È±êÊ¶Ğ¡ÓÚ0 Ìø¹ı³¤¶È
+			buffer.skipBytes(2);// é•¿åº¦æ ‡è¯†å°äº0 è·³è¿‡é•¿åº¦
 			Channels.fireExceptionCaught(channel, new CorruptedFrameException(
 					"negative length field: " + frameLength));
 		}
 
-		// ÅĞ¶Ïlength³¤¶ÈµÄºÏÀíĞÔÒ»ÌõĞ­Òé³¤¶ÈÖÁÉÙÎª4(frameLength + utfLength)²¢ÇÒĞ¡ÓÚShort.MAX_VALUE
-		if (frameLength > Short.MAX_VALUE) { // ³¤¶È´óÓÚºÏÀíÖµ¹Ø±Õ´ËÁ¬½Ó
+		// åˆ¤æ–­lengthé•¿åº¦çš„åˆç†æ€§ä¸€æ¡åè®®é•¿åº¦è‡³å°‘ä¸º4(frameLength + utfLength)å¹¶ä¸”å°äºShort.MAX_VALUE
+		if (frameLength > Short.MAX_VALUE) { // é•¿åº¦å¤§äºåˆç†å€¼å…³é—­æ­¤è¿æ¥
 			Channels.fireExceptionCaught(channel, new TooLongFrameException(
 					"frame length exceeds " + Short.MAX_VALUE));
 		}
 
-		if (buffer.readableBytes() < frameLength + 2) { // +2Îª¼ÓÉÏframeLength±¾ÉíshortµÄ³¤¶È
+		if (buffer.readableBytes() < frameLength + 2) { // +2ä¸ºåŠ ä¸ŠframeLengthæœ¬èº«shortçš„é•¿åº¦
 			return null;
 		}
 
 		LlpMessage msg = getLlpMessage(channel, buffer, buffer.readerIndex(),
 				frameLength);
-		buffer.readerIndex(buffer.readerIndex() + frameLength + 2); // ÍêÕû¶ÁÍêÒ»ÌõÏûÏ¢
+		buffer.readerIndex(buffer.readerIndex() + frameLength + 2); // å®Œæ•´è¯»å®Œä¸€æ¡æ¶ˆæ¯
 																	// length(short)
 																	// + data
 		return msg;
 	}
 
 	/**
-	 * ´ÓChannelBufferÖĞ»ñÈ¡LlpMessage ChannelBufferÖĞÄÚÈİ¸ñÊ½Îª msgName(utf) + llpMsg
+	 * ä»ChannelBufferä¸­è·å–LlpMessage ChannelBufferä¸­å†…å®¹æ ¼å¼ä¸º msgName(utf) + llpMsg
 	 * 
 	 * @param buffer
-	 *            ÍøÂç·¢ËÍ¹ıÀ´µÄLlpMessageÊı¾İ
+	 *            ç½‘ç»œå‘é€è¿‡æ¥çš„LlpMessageæ•°æ®
 	 * @param index
-	 *            bufferÆğÊ¼¶ÁÈ¡Î»ÖÃ
+	 *            bufferèµ·å§‹è¯»å–ä½ç½®
 	 * @param length
-	 *            msgName(utf) + llpMsg×Ü³¤¶È
+	 *            msgName(utf) + llpMsgæ€»é•¿åº¦
 	 * @return LlpMessage
 	 */
 	private LlpMessage getLlpMessage(Channel channel, ChannelBuffer buffer,
 			int index, int length) {
-		// ¶ÁÈ¡UTF Ğ­ÒéÃû³Æ
+		// è¯»å–UTF åè®®åç§°
 		short strLen = buffer.getShort(index);
 		String protocolName = getUTFStr(buffer, index, strLen);
 		if (protocolName == null) {
@@ -79,7 +80,7 @@ public class LlpDecoder extends FrameDecoder {
 					"uft encoding error!"));
 			return null;
 		}
-		// Éú³ÉllpMessage
+		// ç”ŸæˆllpMessage
 		int msgLen = length - strLen - 2; // msgLen = length - utfLen
 		int msgStartPos = index + strLen + 2;
 		ChannelBuffer frame = buffer.factory().getBuffer(msgLen);
@@ -108,4 +109,13 @@ public class LlpDecoder extends FrameDecoder {
 
 		return null;
 	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+			throws Exception {
+		ctx.getChannel().close();
+		logger.error("llp decode error!", e);
+	}
+	
+	
 }

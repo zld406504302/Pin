@@ -160,12 +160,12 @@ public class LlpMessage {
 		return LlpJavaNative.llpRmesSize(llpMesHandle, filedStr);
 	}
 
-	//±àÂë
+	//ç¼–ç 
 	public byte[] encode() {
 		return LlpJavaNative.llpOutMessage(llpMesHandle);
 	}
 
-	//½âÂë
+	//è§£ç 
 	public void decode(byte[] buff) {
 		this.clear();
 		if (LlpJavaNative.llpInMessage(buff, llpMesHandle) == 0) {

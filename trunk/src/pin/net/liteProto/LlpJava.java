@@ -34,9 +34,9 @@ public class LlpJava {
 	}
 
 	/**
-	 * �˽ӿڱȽ�Σ�� ������Ҫʹ��
-	 * ������ô˷�������ʹ�ù��ڴ�lpb�ļ���message���󶼻��׳��쳣
-	 * @param lpbfile Ҫɾ����lpb�ļ���
+	 * 此接口比较危险 尽量不要使用
+	 * 如果调用此方法所有使用关于此lpb文件的message对象都会抛出异常
+	 * @param lpbfile 要删除的lpb文件名
 	 * @throws Exception
 	 */
 	public void delMessage(String lpbfile) throws Exception {
