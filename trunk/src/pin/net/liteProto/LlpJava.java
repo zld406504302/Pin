@@ -3,25 +3,29 @@ import java.lang.Exception;
 
 public class LlpJava {
 	private long env;
+	private static LlpJava instance = new LlpJava();
 
-	public LlpJava() throws Exception {
+	private LlpJava() {
 		env = LlpJavaNative.llpNewEnv();
 		if (env == 0) {
-			throw new Exception("[LlpJavaNative Env]: newEnv is error.");
+			throw new RuntimeException("[LlpJavaNative Env]: newEnv is error.");
 		}
 	}
-
-	public LlpJava(String[] regMsg) throws Exception {
-		this();
-		for (int i = 0; i < regMsg.length; i++) {
-			this.regMessage(regMsg[i]);
-		}
+	
+	public static LlpJava instance() {
+		return instance;
 	}
 
 	public void destory() {
 		LlpJavaNative.llpFreeEnv(env);
 	}
 
+	public void regMessage(String[] regMsg) throws Exception {
+		for (int i = 0; i < regMsg.length; i++) {
+			this.regMessage(regMsg[i]);
+		}
+	}
+	
 	public void regMessage(String msg) throws Exception {
 		if (LlpJavaNative.llpRegMes(env, msg) == 0) {
 			throw new Exception("[LlpJavaNative RegMes]: regedit message \""
@@ -42,10 +46,10 @@ public class LlpJava {
 		}
 	}
 
-	public LlpMessage getMessage(String msg) {
+	public LlpMessage getMessage(String msg) throws Exception {
 		long handle = LlpJavaNative.llpMessageNew(env, msg);
 		if (handle == 0) {
-			throw new RuntimeException("[LlpJavaNative NewMes]: get message \""
+			throw new Exception("[LlpJavaNative NewMes]: get message \""
 					+ msg + "\" is error.");
 		}
 
@@ -53,10 +57,10 @@ public class LlpJava {
 		return llpMessage;
 	}
 
-	public LlpMessage getMessage(String msg, byte[] buff) {
+	public LlpMessage getMessage(String msg, byte[] buff) throws Exception {
 		long handle = LlpJavaNative.llpMessageNew(env, msg);
 		if (handle == 0 || buff == null) {
-			throw new RuntimeException("[LlpJavaNative NewMes]: get message \""
+			throw new Exception("[LlpJavaNative NewMes]: get message \""
 					+ msg + "\" is error.");
 		}
 

@@ -6,7 +6,7 @@ public class LlpTest {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		LlpJava llpJava = new LlpJava();
+		LlpJava llpJava = LlpJava.instance();
 
 		llpJava.regMessage("test.mes.lpb");
 		llpJava.delMessage("test.mes.lpb");

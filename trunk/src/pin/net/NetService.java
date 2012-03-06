@@ -8,7 +8,8 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
+
+import pin.net.liteProto.LlpDecoder;
 
 public class NetService {
 
@@ -27,7 +28,7 @@ public class NetService {
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
-                return Channels.pipeline(new LengthFieldBasedFrameDecoder(32767, 0, 2));
+                return Channels.pipeline(new LlpDecoder());
             }
         });
 
