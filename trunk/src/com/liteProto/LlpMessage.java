@@ -17,6 +17,7 @@ public class LlpMessage {
 	// destory
 	public void destory() {
 		LlpJavaNative.llpMessageFree(llpMesHandle);
+		llpMesHandle = 0;
 	}
 
 	// clear
@@ -173,4 +174,9 @@ public class LlpMessage {
 					+ name + "\" is error.");
 		}
 	}
+
+	public String getName() {
+		return name;
+	}
+	
 }

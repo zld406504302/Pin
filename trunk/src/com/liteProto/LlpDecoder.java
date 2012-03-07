@@ -73,8 +73,8 @@ public class LlpDecoder extends FrameDecoder {
 	private LlpMessage getLlpMessage(Channel channel, ChannelBuffer buffer,
 			int index, int length) {
 		// 读取UTF 协议名称
-		short strLen = buffer.getShort(index);
-		String protocolName = getUTFStr(buffer, index, strLen);
+		short strLen = buffer.getShort(index + 2);
+		String protocolName = getUTFStr(buffer, index + 4, strLen);
 		if (protocolName == null) {
 			Channels.fireExceptionCaught(channel, new CorruptedFrameException(
 					"uft encoding error!"));
@@ -82,7 +82,7 @@ public class LlpDecoder extends FrameDecoder {
 		}
 		// 生成llpMessage
 		int msgLen = length - strLen - 2; // msgLen = length - utfLen
-		int msgStartPos = index + strLen + 2;
+		int msgStartPos = index + strLen + 4; //msgLen(short) + utfLen
 		ChannelBuffer frame = buffer.factory().getBuffer(msgLen);
 		frame.writeBytes(buffer, msgStartPos, msgLen);
 		LlpMessage msg = null;
@@ -98,7 +98,7 @@ public class LlpDecoder extends FrameDecoder {
 	private String getUTFStr(ChannelBuffer buffer, int index, int strLen) {
 		if (strLen > 0) {
 			byte[] data = new byte[strLen];
-			buffer.getBytes(index, data, index + 2, strLen);
+			buffer.getBytes(index, data, 0, strLen);
 			try {
 				return new String(data, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
@@ -114,7 +114,7 @@ public class LlpDecoder extends FrameDecoder {
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 			throws Exception {
 		ctx.getChannel().close();
-		logger.error("llp decode error!", e);
+		logger.error("llp decode error!", e.getCause());
 	}
 	
 	

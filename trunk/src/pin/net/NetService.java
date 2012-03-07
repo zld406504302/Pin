@@ -4,20 +4,18 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
-import com.liteProto.LlpDecoder;
-
-import pin.net.handler.EchoHandler;
+import com.liteProto.LlpJava;
 
 public class NetService {
 
 	private int port;
-	public NetService(int port) {
+	private ChannelPipelineFactory channelPipelineFactory;
+	public NetService(int port, ChannelPipelineFactory channelPipelineFactory) {
 		this.port = port;
+		this.channelPipelineFactory = channelPipelineFactory;
 	}
 	
     public void run() {
@@ -28,13 +26,10 @@ public class NetService {
                         Executors.newCachedThreadPool()));
 
         // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            public ChannelPipeline getPipeline() throws Exception {
-                return Channels.pipeline(new LlpDecoder(), new EchoHandler());
-            }
-        });
+        bootstrap.setPipelineFactory(channelPipelineFactory);
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
+        System.out.println("server started ...");
     }
 }

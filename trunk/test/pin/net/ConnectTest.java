@@ -10,15 +10,25 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
+import com.liteProto.LlpDecoder;
+import com.liteProto.LlpJava;
+
 public class ConnectTest {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String host = args[0];
-		int port = Integer.parseInt(args[1]);
+		String host = "127.0.0.1";
+		int port = 8756;
 
+    	try {
+			LlpJava.instance().regMessage("./lpb/testLlp.mes.lpb");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
 		ChannelFactory factory =
 				new NioClientSocketChannelFactory(
 						Executors.newCachedThreadPool(),
@@ -28,7 +38,7 @@ public class ConnectTest {
 
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() {
-				return Channels.pipeline(new TestClientHandler());
+				return Channels.pipeline(new LlpDecoder(), new TestClientHandler());
 			}
 		});
 
