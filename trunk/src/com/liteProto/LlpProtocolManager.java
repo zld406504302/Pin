@@ -1,4 +1,4 @@
-package pin.net.protocol;
+package com.liteProto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,12 +6,13 @@ import java.util.Map;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.Channels;
 
-import com.liteProto.LlpMessage;
+import pin.net.protocol.ProtocolHandler;
 
-public abstract class ProtocolManager {
+
+public abstract class LlpProtocolManager {
 	protected Map<String, ProtocolHandler> handlerMap = new HashMap<String, ProtocolHandler>();
 	
-	public ProtocolManager() {
+	public LlpProtocolManager() {
 		regProtocolHandler();
 	}
 	
@@ -19,8 +20,9 @@ public abstract class ProtocolManager {
 	
 	public void handleMessage(ChannelHandlerContext ctx, LlpMessage message) {
 		ProtocolHandler handler = handlerMap.get(message.getName());
-		if(handler == null)
+		if(handler == null) {
 			Channels.fireExceptionCaught(ctx.getChannel(), new RuntimeException("can not find handler for " + message.getName()));
+		}
 		
 		handler.handleReceivedMessage(message);
 		message.destory();

@@ -1,9 +1,11 @@
 package pin.net;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteOrder;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.buffer.HeapChannelBufferFactory;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -35,7 +37,7 @@ public class ConnectTest {
 						Executors.newCachedThreadPool());
 
 		ClientBootstrap bootstrap = new ClientBootstrap(factory);
-
+		bootstrap.setOption("bufferFactory", new HeapChannelBufferFactory(ByteOrder.LITTLE_ENDIAN));
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() {
 				return Channels.pipeline(new LlpDecoder(), new TestClientHandler());

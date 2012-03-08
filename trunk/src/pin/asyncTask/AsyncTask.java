@@ -1,9 +1,15 @@
 package pin.asyncTask;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,9 +135,30 @@ import pin.asyncTask.AsyncTaskResult.EAsyncTaskAction;
  * </ul>
  */
 public abstract class AsyncTask<Params, Progress, Result> {
-	private static final Logger logger = LoggerFactory.getLogger(AsyncTask.class);
+	private static final int CORE_POOL_SIZE = 5;
+	private static final int MAXIMUM_POOL_SIZE = 128;
+	private static final int KEEP_ALIVE = 1;
+	private static final Logger logger = LoggerFactory
+			.getLogger(AsyncTask.class);
+
+	private static final BlockingQueue<Runnable> sWorkQueue = new LinkedBlockingQueue<Runnable>(
+			10);
+
+	private static final ThreadFactory sThreadFactory = new ThreadFactory() {
+		private final AtomicInteger mCount = new AtomicInteger(1);
+
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "AsyncTask #" + mCount.getAndIncrement());
+		}
+	};
+
+	private static final ThreadPoolExecutor sExecutor = new ThreadPoolExecutor(
+			CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS,
+			sWorkQueue, sThreadFactory);
+
 	private volatile Status mStatus = Status.PENDING;
 
+	private CallBackHandler cbHandler;
 	private final WorkerRunnable<Params, Result> mWorker;
 	private final FutureTask<Result> mFuture;
 
@@ -181,18 +208,31 @@ public abstract class AsyncTask<Params, Progress, Result> {
 				} catch (InterruptedException e) {
 					logger.error("async task interrupted!", e);
 				} catch (ExecutionException e) {
-					throw new RuntimeException("An error occured while executing doInBackground()", e.getCause());
+					throw new RuntimeException(
+							"An error occured while executing doInBackground()",
+							e.getCause());
 				} catch (CancellationException e) {
-					asyncResult = new AsyncTaskResult<Result>(AsyncTask.this, EAsyncTaskAction.CANCEL, (Result) null);
+					if (cbHandler == null) {
+						onCancelled();
+					} else {
+						asyncResult = new AsyncTaskResult<Result>(
+								AsyncTask.this, EAsyncTaskAction.CANCEL,
+								(Result) null);
+						cbHandler.addResult(asyncResult);
+					}
 					AsyncTask.this.mStatus = Status.CANCEL;
-					AsyncTaskManager.instance().addResult(asyncResult);
 					return;
 				} catch (Throwable t) {
-					throw new RuntimeException("An error occured while executing doInBackground()", t);
+					throw new RuntimeException(
+							"An error occured while executing doInBackground()",
+							t);
 				}
-
-				asyncResult = new AsyncTaskResult<Result>(AsyncTask.this, EAsyncTaskAction.RESULT, result);
-				AsyncTaskManager.instance().addResult(asyncResult);
+				if (cbHandler == null) {
+					finish(result);
+				} else {
+					asyncResult = new AsyncTaskResult<Result>(AsyncTask.this, EAsyncTaskAction.RESULT, result);
+					cbHandler.addResult(asyncResult);
+				}
 			}
 		};
 	}
@@ -304,9 +344,11 @@ public abstract class AsyncTask<Params, Progress, Result> {
 		if (mStatus != Status.PENDING) {
 			switch (mStatus) {
 			case RUNNING:
-				throw new IllegalStateException("Cannot execute task:" + " the task is already running.");
+				throw new IllegalStateException("Cannot execute task:"
+						+ " the task is already running.");
 			case FINISHED:
-				throw new IllegalStateException("Cannot execute task:" + " the task has already been executed "
+				throw new IllegalStateException("Cannot execute task:"
+						+ " the task has already been executed "
 						+ "(a task can be executed only once)");
 			}
 		}
@@ -317,7 +359,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
 
 		mWorker.mParams = params;
 
-		AsyncTaskManager.instance().getsExecutor().execute(mFuture);
+		sExecutor.execute(mFuture);
 
 		return this;
 	}
@@ -335,8 +377,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
 	 * @see #doInBackground
 	 */
 	protected final void publishProgress(Progress value) {
-		AsyncTaskResult<Progress> asyncResult = new AsyncTaskResult<Progress>(AsyncTask.this, EAsyncTaskAction.UPDATE, value);
-		AsyncTaskManager.instance().addResult(asyncResult);
+		onProgressUpdate(value);
 	}
 
 	protected final void finish(Result result) {
@@ -346,7 +387,8 @@ public abstract class AsyncTask<Params, Progress, Result> {
 		mStatus = Status.FINISHED;
 	}
 
-	private static abstract class WorkerRunnable<Params, Result> implements Callable<Result> {
+	private static abstract class WorkerRunnable<Params, Result> implements
+			Callable<Result> {
 		Params[] mParams;
 	}
 }
