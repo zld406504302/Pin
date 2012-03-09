@@ -1,10 +1,11 @@
-package pin.main;
+package pin.core;
 
 
 public class Pin {
 
 	public static final boolean isLinux = System.getProperty("os.name").contains("Linux");
 	public static final boolean is64Bit = System.getProperty("os.arch").equals("amd64");
+	public static final long startTime = System.currentTimeMillis();
 	
 	public static void loadLibrary(String libName) {
 		if(is64Bit) {

@@ -1,6 +1,6 @@
 package com.liteProto;
 
-import pin.main.Pin;
+import pin.core.Pin;
 
 public class LlpJavaNative {
 

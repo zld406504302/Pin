@@ -31,7 +31,6 @@ public class LlpDecoder extends FrameDecoder {
 		if (buffer.readableBytes() < 2) {
 			return null;
 		}
-
 		// 读取frame长度字段
 		short frameLength = buffer.getShort(buffer.readerIndex());
 
