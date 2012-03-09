@@ -1,5 +1,7 @@
 package pin.message;
 
+import org.slf4j.impl.StaticLoggerBinder;
+
 import pin.core.Handler;
 import pin.core.HandlerThread;
 import pin.core.Looper;
@@ -7,6 +9,7 @@ import pin.core.Message;
 
 public class HandlerTest {
 	public static void main(String[] args) {
+		StaticLoggerBinder.getSingleton().getLoggerFactory();
 		HandlerThread hThread = new HandlerThread("testHandlerThread");
 		hThread.start();
 		MyHandler mHandler = new MyHandler(hThread.getLooper());
