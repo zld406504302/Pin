@@ -1,7 +1,5 @@
 package pin.core;
 
-import sun.jkernel.Bundle;
-
 public class Message {
 	/**
 	 * User-defined message code so that the recipient can identify what this
@@ -50,7 +48,7 @@ public class Message {
 	private static Message sPool;
 	private static int sPoolSize = 0;
 
-	private static final int MAX_POOL_SIZE = 10;
+	private static final int MAX_POOL_SIZE = 50;
 
 	private Message() {
 

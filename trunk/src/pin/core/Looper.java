@@ -87,7 +87,7 @@ public class Looper {
 				msg.target.dispatchMessage(msg);
 
 				long threadTime = System.currentTimeMillis() - threadStart;
-				logger.debug(TAG, "dispatchMessage cost time: " + threadTime);
+				logger.debug("dispatchMessage cost time: " + threadTime);
 
 				msg.recycle();
 			}

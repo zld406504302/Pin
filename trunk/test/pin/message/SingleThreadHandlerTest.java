@@ -7,12 +7,12 @@ import pin.core.HandlerThread;
 import pin.core.Looper;
 import pin.core.Message;
 
-public class HandlerTest {
+public class SingleThreadHandlerTest {
 	public static void main(String[] args) {
 		StaticLoggerBinder.getSingleton().getLoggerFactory();
 		HandlerThread hThread = new HandlerThread("testHandlerThread");
 		hThread.start();
-		MyHandler mHandler = new MyHandler(hThread.getLooper());
+		MainHandler mHandler = new MainHandler(hThread.getLooper());
 		Message m = mHandler.obtainMessage(1, "aaaa");
 		m.sendToTarget();
 	}

@@ -7,3 +7,18 @@ message testLlpDataType {
         string str;        #字符串
 	stream data;   #byte数组
 }
+
+ R_MesObj
+W_MesObj
+struct messageObj {
+	class* ptr ;  ------------------> {
+								table;
+								table_list[];
+							}
+
+	//obj
+	list[];
+	list_len;
+
+	byte[] slice;	//	
+}

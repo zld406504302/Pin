@@ -192,6 +192,12 @@ public abstract class Handler {
         + "}";
     }
 
+    // if we can get rid of this method, the handler need not remember its loop
+    // we could instead export a getMessageQueue() method... 
+    public final Looper getLooper() {
+        return mLooper;
+    }
+    
     public final void dump(String prefix) {
         if (mLooper == null) {
             logger.info(prefix, "looper uninitialized");
