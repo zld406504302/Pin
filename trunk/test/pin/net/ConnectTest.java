@@ -12,6 +12,8 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
+import pin.liteProto.TestClientHandler;
+
 import com.liteProto.LlpDecoder;
 import com.liteProto.LlpJava;
 
