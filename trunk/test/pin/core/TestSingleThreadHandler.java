@@ -1,13 +1,8 @@
 package pin.core;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
-import pin.core.Handler;
-import pin.core.HandlerThread;
-import pin.core.Looper;
-import pin.core.Message;
 
 public class TestSingleThreadHandler {
 
