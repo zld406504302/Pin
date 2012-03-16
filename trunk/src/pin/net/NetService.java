@@ -7,9 +7,11 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBufferFactory;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NetService {
-
+	private Logger logger = LoggerFactory.getLogger(NetService.class);
 	private int port;
 	private ChannelPipelineFactory channelPipelineFactory;
 	private ChannelBufferFactory channelBufferFactory;
@@ -32,6 +34,6 @@ public class NetService {
         bootstrap.setOption("child.bufferFactory", channelBufferFactory);
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
-        System.out.println("server started ...");
+        logger.info("server started ...");
     }
 }

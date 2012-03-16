@@ -9,6 +9,7 @@
 	<classpathentry kind="lib" path="libs/pin-natives.jar"/>
 	<classpathentry kind="lib" path="libs/logback-classic-1.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/logback-core-1.0.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JUnit4.10"/>
+	<classpathentry kind="lib" path="libs/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="libs/commons-pool-1.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

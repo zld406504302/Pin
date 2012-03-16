@@ -81,8 +81,7 @@ public class Looper {
 					return;
 				}
 
-				long threadStart = 0;
-				threadStart = System.currentTimeMillis();
+				long threadStart = System.currentTimeMillis();
 
 				msg.target.dispatchMessage(msg);
 

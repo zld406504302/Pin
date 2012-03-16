@@ -18,14 +18,14 @@ public abstract class LlpProtocolManager {
 	
 	protected abstract void regProtocolHandler();
 	
-	public void handleMessage(ChannelHandlerContext ctx, LlpMessage message) {
+	public void handleMessage(ChannelHandlerContext ctx, LlpMessage message) throws Exception {
 		ProtocolHandler handler = handlerMap.get(message.getName());
 		if(handler == null) {
 			Channels.fireExceptionCaught(ctx.getChannel(), new RuntimeException("can not find handler for " + message.getName()));
+			return;
 		}
 		
-		handler.handleReceivedMessage(message);
-		message.destory();
+		handler.handleReceivedMessage(ctx, message);
 		handler.handleReply(ctx);
 	}
 }
