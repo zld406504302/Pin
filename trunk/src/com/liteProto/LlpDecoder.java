@@ -21,12 +21,10 @@ import org.slf4j.LoggerFactory;
  */
 public class LlpDecoder extends FrameDecoder {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(LlpDecoder.class);
+	private static final Logger logger = LoggerFactory.getLogger(LlpDecoder.class);
 
 	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel,
-			ChannelBuffer buffer) throws Exception {
+	protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
 
 		if (buffer.readableBytes() < 2) {
 			return null;
@@ -36,24 +34,20 @@ public class LlpDecoder extends FrameDecoder {
 
 		if (frameLength <= 4) {
 			buffer.skipBytes(2);// 长度标识小于0 跳过长度
-			Channels.fireExceptionCaught(channel, new CorruptedFrameException(
-					"negative length field: " + frameLength));
+			Channels.fireExceptionCaught(channel, new CorruptedFrameException("negative length field: " + frameLength));
 		}
 
 		// 判断length长度的合理性一条协议长度至少为4(frameLength + utfLength)并且小于Short.MAX_VALUE
 		if (frameLength > Short.MAX_VALUE) { // 长度大于合理值关闭此连接
-			Channels.fireExceptionCaught(channel, new TooLongFrameException(
-					"frame length exceeds " + Short.MAX_VALUE));
+			Channels.fireExceptionCaught(channel, new TooLongFrameException("frame length exceeds " + Short.MAX_VALUE));
 		}
 
 		if (buffer.readableBytes() < frameLength + 2) { // +2为加上frameLength本身short的长度
 			return null;
 		}
 
-		LlpMessage msg = getLlpMessage(channel, buffer, buffer.readerIndex(),
-				frameLength);
-		buffer.readerIndex(buffer.readerIndex() + frameLength + 2); // 完整读完一条消息
-																	// length(short)
+		LlpMessage msg = getLlpMessage(channel, buffer, buffer.readerIndex(), frameLength);
+		buffer.readerIndex(buffer.readerIndex() + frameLength + 2); // 完整读完一条消息length(short)
 																	// + data
 		return msg;
 	}
@@ -69,27 +63,24 @@ public class LlpDecoder extends FrameDecoder {
 	 *            msgName(utf) + llpMsg总长度
 	 * @return LlpMessage
 	 */
-	private LlpMessage getLlpMessage(Channel channel, ChannelBuffer buffer,
-			int index, int length) {
+	private LlpMessage getLlpMessage(Channel channel, ChannelBuffer buffer, int index, int length) {
 		// 读取UTF 协议名称
 		short strLen = buffer.getShort(index + 2);
 		String protocolName = getUTFStr(buffer, index + 4, strLen);
 		if (protocolName == null) {
-			Channels.fireExceptionCaught(channel, new CorruptedFrameException(
-					"uft encoding error!"));
+			Channels.fireExceptionCaught(channel, new CorruptedFrameException("uft encoding error!"));
 			return null;
 		}
 		// 生成llpMessage
 		int msgLen = length - strLen - 2; // msgLen = length - utfLen
-		int msgStartPos = index + strLen + 4; //msgLen(short) + utfLen
+		int msgStartPos = index + strLen + 4; // msgLen(short) + utfLen
 		ChannelBuffer frame = buffer.factory().getBuffer(msgLen);
 		frame.writeBytes(buffer, msgStartPos, msgLen);
 		LlpMessage msg = null;
 		try {
 			msg = LlpJava.instance().getMessage(protocolName, frame.array());
 		} catch (Exception e) {
-			Channels.fireExceptionCaught(channel, new CorruptedFrameException(
-					"phrase llp message failed!"));
+			Channels.fireExceptionCaught(channel, new CorruptedFrameException("phrase llp message failed!"));
 		}
 		return msg;
 	}
@@ -110,11 +101,9 @@ public class LlpDecoder extends FrameDecoder {
 	}
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
-			throws Exception {
+	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
 		ctx.getChannel().close();
 		logger.error("llp decode error!", e.getCause());
 	}
-	
-	
+
 }

@@ -1,30 +1,37 @@
 package com.liteProto;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteOrder;
 
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.Channel;
 
+import pin.net.protocol.ProtocolHandler;
 
-public class LlpMessageHandler extends SimpleChannelHandler {
+public abstract class LlpMessageHandler implements ProtocolHandler {
 
-	private LlpProtocolManager protocolManager;
+	private ByteOrder order = ByteOrder.LITTLE_ENDIAN;
 
-	public LlpMessageHandler(LlpProtocolManager protocolManager) {
-		this.protocolManager = protocolManager;
+	public LlpMessageHandler(ByteOrder order) {
+		this.order = order;
 	}
 
-	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-			throws Exception {
-		LlpMessage msg = null;
-		try {
-			msg = (LlpMessage) e.getMessage();
-			protocolManager.handleMessage(ctx, msg);
-		} finally {
-			if(msg != null) {
-				msg.destory();
-			}
-		}
+	public LlpMessageHandler() {
+
 	}
+
+	public void sendData(Channel channel, String msgName, byte[] data) throws UnsupportedEncodingException {
+		int dataLen = data.length;
+		byte[] msgNameData = msgName.getBytes("UTF-8");
+		int msgNameLength = msgNameData.length;
+		int totalLength = 2 + msgNameLength + dataLen;
+		ChannelBuffer cb = ChannelBuffers.buffer(order, totalLength + 2);
+		cb.writeShort(totalLength);
+		cb.writeShort(msgNameLength);
+		cb.writeBytes(msgNameData);
+		cb.writeBytes(data);
+		channel.write(cb);
+	}
+
 }
