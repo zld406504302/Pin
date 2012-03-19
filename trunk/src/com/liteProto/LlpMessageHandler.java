@@ -34,4 +34,7 @@ public abstract class LlpMessageHandler implements ProtocolHandler {
 		channel.write(cb);
 	}
 
+	public void sendData(Channel channel, LlpMessage msg) throws UnsupportedEncodingException {
+		sendData(channel, msg.getName(), msg.encode());
+	}
 }
