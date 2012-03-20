@@ -28,7 +28,6 @@ public final class Lua {
 	
 	private static Lua instance = new Lua();
 
-	/** 私有构造函数，不可实例化 */
 	private Lua() {
 	}
 	
@@ -37,12 +36,10 @@ public final class Lua {
 	}
 
 	/**
-	 * 启动脚本服务，仅在本地开发服务器启动自动加载功能
+	 * 启动脚本服务
 	 * 
 	 * @param luaDirectory
 	 *            程序脚本目录
-	 * @param resourceDirectory
-	 *            策划脚本资源目录
 	 */
 	public void start(final File luaDirectory) {
 		this.luaDirectory = luaDirectory;
@@ -60,7 +57,7 @@ public final class Lua {
 	}
 
 	/**
-	 * 加载脚本，首先加载程序脚本目录，然后加载策划脚本资源目录
+	 * 加载脚本
 	 */
 	protected void loadLua() {
 		logger.info("～～～加载脚本～～～");
