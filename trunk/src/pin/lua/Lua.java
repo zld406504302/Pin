@@ -3,6 +3,9 @@ package pin.lua;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.keplerproject.luajava.LuaException;
 import org.keplerproject.luajava.LuaObject;
@@ -10,6 +13,8 @@ import org.keplerproject.luajava.LuaState;
 import org.keplerproject.luajava.LuaStateFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import pin.core.Pin;
 
 /**
  * 封装对Lua的访问
@@ -19,20 +24,18 @@ import org.slf4j.LoggerFactory;
  */
 public final class Lua {
 	/** 全局唯一LuaState */
-	protected LuaState lua;
+	protected static LuaState lua;
 
 	/** 程序脚本目录 */
-	private File luaDirectory;
+	private static File luaDirectory;
 
-	private Logger logger = LoggerFactory.getLogger(Lua.class);
+	/** 函数性能统计 */
+	private static HashMap<String, Stat> statinfo = new HashMap<String, Stat>();
 	
-	private static Lua instance = new Lua();
-
+	public static final Logger logger = LoggerFactory.getLogger(Lua.class);
+	
+	/** 私有构造函数，不可实例化 */
 	private Lua() {
-	}
-	
-	public static Lua instance () {
-		return instance;
 	}
 
 	/**
@@ -41,45 +44,57 @@ public final class Lua {
 	 * @param luaDirectory
 	 *            程序脚本目录
 	 */
-	public void start(final File luaDirectory) {
-		this.luaDirectory = luaDirectory;
+	public static void start(final File luaDirectory, final List<DefaultJavaFunc> javaFuncs) {
+		Lua.luaDirectory = luaDirectory;
+		init();
+		registerJavaFuncs(javaFuncs);
 		loadLua();
 	}
 
+	private static void init() {
+		if (lua != null && !lua.isClosed())
+			synchronized (lua) {
+				lua.close();
+			}
+
+		lua = LuaStateFactory.newLuaState();
+		lua.checkStack(1024);
+		lua.openLibs();
+	}
+	
 	/**
 	 * 关闭Lua应用
 	 */
-	public void close() {
+	public static synchronized void close() {
+
 		synchronized (lua) {
 			if (!lua.isClosed())
 				lua.close();
 		}
 	}
 
+	private static void registerJavaFuncs(final List<DefaultJavaFunc> javaFuncs) {
+		for (DefaultJavaFunc jf : javaFuncs) {
+			jf.register();
+		}
+	}
+
 	/**
-	 * 加载脚本
+	 * 加载脚本，首先加载程序脚本目录，然后加载策划脚本资源目录
 	 */
-	protected void loadLua() {
+	protected static void loadLua() {
 		logger.info("～～～加载脚本～～～");
 
-		if (lua != null && !lua.isClosed()) {
-			synchronized (lua) {
-				lua.close();
-			}
-		}
-
-		lua = LuaStateFactory.newLuaState();
-		lua.checkStack(1024);
-		lua.openLibs();
-
-		if (lua.LdoFile(luaDirectory.getAbsolutePath() + File.separator + "load.lua") != 0) {
+		if(lua.LdoFile(luaDirectory.getAbsolutePath() + File.separator + "load.lua") != 0) {
 			logger.error("加载load.lua失败");
-			logger.info("loadLua", "～～～加载完成～～～");
+			logger.info("～～～加载完成～～～");
 			return;
 		}
 
-		for (String directory : call4String("loadLua").split(";"))
+		for (String directory : call4String("loadLua").split(";")) {
+			logger.info(Lua.luaDirectory .getPath()+ "/" + directory);
 			loadDirectory(new File(luaDirectory.getAbsolutePath() + File.separator + directory));
+		}
 
 		logger.info("～～～加载完成～～～");
 	}
@@ -90,43 +105,37 @@ public final class Lua {
 	 * @param directory
 	 *            脚本文件目录
 	 */
-	private void loadDirectory(final File directory) {
-		for (File luaScript : directory.listFiles(LuaFilter.INSTANCE))
-			if (lua.LdoFile(luaScript.getAbsolutePath()) != 0)
+	private static void loadDirectory(final File directory) {
+		for (File luaScript : directory.listFiles(luaFilter)) {
+			if (lua.LdoFile(luaScript.getAbsolutePath()) != 0) {
 				logger.error("加载【" + luaScript.getAbsolutePath() + "】失败！");
+			} else {
+				logger.info("加载【" + luaScript.getAbsolutePath() + "】成功！");
+			}
+		}
 
-		for (File luaDirectoryTemp : directory.listFiles(DirectoryFilter.INSTANCE))
-			if (!luaDirectoryTemp.isHidden())
-				loadDirectory(luaDirectoryTemp);
+		for(File luaDirectory : directory.listFiles(directoryFilter))
+			if(!luaDirectory.isHidden())
+				loadDirectory(luaDirectory);
 	}
+	
+	private static FileFilter luaFilter = new FileFilter() {
 
-	/**
-	 * Lua文件过滤（按照扩展名）
-	 * 
-	 * @author Sid
-	 */
-	private enum LuaFilter implements FileFilter {
-		/** 单例 */
-		INSTANCE;
 		@Override
-		public boolean accept(final File file) {
+		public boolean accept(File file) {
 			return file.isFile() && file.getName().endsWith(".lua");
 		}
-	}
+		
+	};
 
-	/**
-	 * 目录过滤
-	 * 
-	 * @author Sid
-	 */
-	private enum DirectoryFilter implements FileFilter {
-		/** 单例 */
-		INSTANCE;
+	private static FileFilter directoryFilter = new FileFilter() {
+
 		@Override
-		public boolean accept(final File file) {
+		public boolean accept(File file) {
 			return file.isDirectory();
 		}
-	}
+		
+	};
 
 	/**
 	 * 向栈中压入数据
@@ -134,7 +143,7 @@ public final class Lua {
 	 * @param obj
 	 *            目标数据
 	 */
-	public void push(final Object obj) {
+	public static void push(final Object obj) {
 		if (obj == null)
 			lua.pushNil();
 		else if (obj instanceof String)
@@ -159,7 +168,7 @@ public final class Lua {
 	 * @return 目标数据
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T castData(final Class<T> c, final LuaObject lobj) {
+	private static <T> T castData(final Class<T> c, final LuaObject lobj) {
 		if (c == null) {
 			if (lobj.isNil())
 				return null;
@@ -221,7 +230,7 @@ public final class Lua {
 	 *            索引
 	 * @return Table属性
 	 */
-	public <T> T getObject(final Class<T> c, final Object... indexs) {
+	public static <T> T getObject(final Class<T> c, final Object... indexs) {
 		LuaObject lobj = null;
 		synchronized (lua) {
 			if (lua == null || lua.isClosed())
@@ -268,7 +277,7 @@ public final class Lua {
 	 *            可变参数部分，依次填写索引部分、要调用的函数名、函数参数
 	 * @return Lua函数的返回值
 	 */
-	private <T> T callLua(final boolean oocall, final int indexNum, final boolean result, final Class<T> c, final Object... indexAndArgs) {
+	private static <T> T callLua(final boolean oocall, final int indexNum, final boolean result, final Class<T> c, final Object... indexAndArgs) {
 		if (indexAndArgs.length <= indexNum)
 			throw new IllegalArgumentException("参数长度必须大于索引数目！");
 
@@ -284,6 +293,8 @@ public final class Lua {
 
 			throw new IllegalArgumentException("函数名必须为String！" + builder);
 		}
+
+		long call = System.nanoTime();
 
 		String function = (String) indexAndArgs[indexNum];
 
@@ -331,11 +342,21 @@ public final class Lua {
 				push(indexAndArgs[i]);
 
 			if (lua.pcall(indexAndArgs.length - indexNum - (oocall ? 0 : 1), result ? 1 : 0, stackTop + 1) != 0)
-				logger.error(function + lua.getLuaObject(-1));
+				System.out.println(lua.getLuaObject(-1));
 			else if (result)
 				lobj = lua.getLuaObject(-1);
 
 			lua.setTop(stackTop);
+		}
+
+		long time = (System.nanoTime() - call) / 1000000;
+		Stat stat = statinfo.get(function);
+		if (stat == null) {
+			stat = new Stat(1, time);
+			statinfo.put(function, stat);
+		} else {
+			stat.count++;
+			stat.timecost += time;
 		}
 
 		return result ? castData(c, lobj) : null;
@@ -349,7 +370,7 @@ public final class Lua {
 	 * @return lua boolean<br>
 	 *         (lua nil = false, lua false = false, lua other = true)
 	 */
-	public boolean getBool(final Object... indexs) {
+	public static boolean getBool(final Object... indexs) {
 		return getObject(Boolean.class, indexs);
 	}
 
@@ -360,7 +381,7 @@ public final class Lua {
 	 *            从_G往下的索引
 	 * @return (byte)(lua number)
 	 */
-	public byte getByte(final Object... indexs) {
+	public static byte getByte(final Object... indexs) {
 		return getObject(Byte.class, indexs);
 	}
 
@@ -371,7 +392,7 @@ public final class Lua {
 	 *            从_G往下的索引
 	 * @return (short)(lua number)
 	 */
-	public short getShort(final Object... indexs) {
+	public static short getShort(final Object... indexs) {
 		return getObject(Short.class, indexs);
 	}
 
@@ -382,7 +403,7 @@ public final class Lua {
 	 *            从_G往下的索引
 	 * @return (int)(lua number)
 	 */
-	public int getInt(final Object... indexs) {
+	public static int getInt(final Object... indexs) {
 		return getObject(Integer.class, indexs);
 	}
 
@@ -393,7 +414,7 @@ public final class Lua {
 	 *            从_G往下的索引
 	 * @return (long)(lua number)
 	 */
-	public long getLong(final Object... indexs) {
+	public static long getLong(final Object... indexs) {
 		return getObject(Long.class, indexs);
 	}
 
@@ -404,7 +425,7 @@ public final class Lua {
 	 *            从_G往下的索引
 	 * @return (float)(lua number)
 	 */
-	public float getFloat(final Object... indexs) {
+	public static float getFloat(final Object... indexs) {
 		return getObject(Float.class, indexs);
 	}
 
@@ -415,7 +436,7 @@ public final class Lua {
 	 *            从_G往下的索引
 	 * @return (double)(lua number)
 	 */
-	public double getDouble(final Object... indexs) {
+	public static double getDouble(final Object... indexs) {
 		return getObject(Double.class, indexs);
 	}
 
@@ -426,7 +447,7 @@ public final class Lua {
 	 *            从_G往下的索引
 	 * @return lua string
 	 */
-	public String getString(final Object... indexs) {
+	public static String getString(final Object... indexs) {
 		return getObject(String.class, indexs);
 	}
 
@@ -438,7 +459,7 @@ public final class Lua {
 	 * @param indexAndArgs
 	 *            索引+函数名+参数
 	 */
-	public void call(final int indexNum, final Object... indexAndArgs) {
+	public static void call(final int indexNum, final Object... indexAndArgs) {
 		callLua(false, indexNum, false, null, indexAndArgs);
 	}
 
@@ -448,7 +469,7 @@ public final class Lua {
 	 * @param args
 	 *            函数名+参数，函数名必须为String
 	 */
-	public void callLuaFunction(final Object... args) {
+	public static void callLuaFunction(final Object... args) {
 		callLua(false, 0, false, null, args);
 	}
 
@@ -461,7 +482,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return lua boolean
 	 */
-	public boolean call4Bool(final int indexNum, final Object... indexAndArgs) {
+	public static boolean call4Bool(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, Boolean.class, indexAndArgs);
 	}
 
@@ -474,7 +495,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (byte)(lua number)
 	 */
-	public byte call4Byte(final int indexNum, final Object... indexAndArgs) {
+	public static byte call4Byte(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, Byte.class, indexAndArgs);
 	}
 
@@ -487,7 +508,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (short)(lua number)
 	 */
-	public short call4Short(final int indexNum, final Object... indexAndArgs) {
+	public static short call4Short(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, Short.class, indexAndArgs);
 	}
 
@@ -500,7 +521,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (int)(lua number)
 	 */
-	public int call4Int(final int indexNum, final Object... indexAndArgs) {
+	public static int call4Int(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, Integer.class, indexAndArgs);
 	}
 
@@ -513,7 +534,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (long)(lua number)
 	 */
-	public long call4Long(final int indexNum, final Object... indexAndArgs) {
+	public static long call4Long(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, Long.class, indexAndArgs);
 	}
 
@@ -526,7 +547,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (float)(lua number)
 	 */
-	public float call4Float(final int indexNum, final Object... indexAndArgs) {
+	public static float call4Float(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, Float.class, indexAndArgs);
 	}
 
@@ -539,7 +560,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (double)(lua number)
 	 */
-	public double call4Double(final int indexNum, final Object... indexAndArgs) {
+	public static double call4Double(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, Double.class, indexAndArgs);
 	}
 
@@ -552,7 +573,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return lua string
 	 */
-	public String call4String(final int indexNum, final Object... indexAndArgs) {
+	public static String call4String(final int indexNum, final Object... indexAndArgs) {
 		return callLua(false, indexNum, true, String.class, indexAndArgs);
 	}
 
@@ -568,7 +589,7 @@ public final class Lua {
 	 * @return 模板参数类型的对象
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T call4Object(final int indexNum, final Object... indexAndArgs) {
+	public static <T> T call4Object(final int indexNum, final Object... indexAndArgs) {
 		return (T) callLua(false, indexNum, true, null, indexAndArgs);
 	}
 
@@ -579,7 +600,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return lua boolean
 	 */
-	public boolean call4Bool(final Object... args) {
+	public static boolean call4Bool(final Object... args) {
 		return callLua(false, 0, true, Boolean.class, args);
 	}
 
@@ -590,7 +611,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return (byte)(lua number)
 	 */
-	public byte call4Byte(final Object... args) {
+	public static byte call4Byte(final Object... args) {
 		return callLua(false, 0, true, Byte.class, args);
 	}
 
@@ -601,7 +622,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return (short)(lua number)
 	 */
-	public short call4Short(final Object... args) {
+	public static short call4Short(final Object... args) {
 		return callLua(false, 0, true, Short.class, args);
 	}
 
@@ -612,7 +633,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return (int)(lua number)
 	 */
-	public int call4Int(final Object... args) {
+	public static int call4Int(final Object... args) {
 		return callLua(false, 0, true, Integer.class, args);
 	}
 
@@ -623,7 +644,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return (long)(lua number)
 	 */
-	public long call4Long(final Object... args) {
+	public static long call4Long(final Object... args) {
 		return callLua(false, 0, true, Long.class, args);
 	}
 
@@ -634,7 +655,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return (float)(lua number)
 	 */
-	public float call4Float(final Object... args) {
+	public static float call4Float(final Object... args) {
 		return callLua(false, 0, true, Float.class, args);
 	}
 
@@ -645,7 +666,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return (double)(lua number)
 	 */
-	public double call4Double(final Object... args) {
+	public static double call4Double(final Object... args) {
 		return callLua(false, 0, true, Double.class, args);
 	}
 
@@ -656,7 +677,7 @@ public final class Lua {
 	 *            函数名+参数，函数名必须为String
 	 * @return lua string
 	 */
-	public String call4String(final Object... args) {
+	public static String call4String(final Object... args) {
 		return callLua(false, 0, true, String.class, args);
 	}
 
@@ -670,7 +691,7 @@ public final class Lua {
 	 * @return ArrayList<T>
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> ArrayList<T> call4List(final Object... args) {
+	public static <T> ArrayList<T> call4List(final Object... args) {
 		return (ArrayList<T>) callLua(false, 0, true, null, args);
 	}
 
@@ -684,7 +705,7 @@ public final class Lua {
 	 * @return 模板参数类型的对象
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T call4Object(final Object... args) {
+	public static <T> T call4Object(final Object... args) {
 		return (T) callLua(false, 0, true, null, args);
 	}
 
@@ -696,7 +717,7 @@ public final class Lua {
 	 * @param indexAndArgs
 	 *            索引+函数名+参数
 	 */
-	public void callOO(final int indexNum, final Object... indexAndArgs) {
+	public static void callOO(final int indexNum, final Object... indexAndArgs) {
 		callLua(true, indexNum, false, null, indexAndArgs);
 	}
 
@@ -709,7 +730,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return lua boolean
 	 */
-	public boolean callOO4Bool(final int indexNum, final Object... indexAndArgs) {
+	public static boolean callOO4Bool(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, Boolean.class, indexAndArgs);
 	}
 
@@ -722,7 +743,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (byte)(lua number)
 	 */
-	public byte callOO4Byte(final int indexNum, final Object... indexAndArgs) {
+	public static byte callOO4Byte(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, Byte.class, indexAndArgs);
 	}
 
@@ -735,7 +756,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (short)(lua number)
 	 */
-	public short callOO4Short(final int indexNum, final Object... indexAndArgs) {
+	public static short callOO4Short(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, Short.class, indexAndArgs);
 	}
 
@@ -748,7 +769,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (int)(lua number)
 	 */
-	public int callOO4Int(final int indexNum, final Object... indexAndArgs) {
+	public static int callOO4Int(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, Integer.class, indexAndArgs);
 	}
 
@@ -761,7 +782,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (long)(lua number)
 	 */
-	public long callOO4Long(final int indexNum, final Object... indexAndArgs) {
+	public static long callOO4Long(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, Long.class, indexAndArgs);
 	}
 
@@ -774,7 +795,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (float)(lua number)
 	 */
-	public float callOO4Float(final int indexNum, final Object... indexAndArgs) {
+	public static float callOO4Float(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, Float.class, indexAndArgs);
 	}
 
@@ -787,7 +808,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return (double)(lua number)
 	 */
-	public double callOO4Double(final int indexNum, final Object... indexAndArgs) {
+	public static double callOO4Double(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, Double.class, indexAndArgs);
 	}
 
@@ -800,7 +821,7 @@ public final class Lua {
 	 *            索引+函数名+参数
 	 * @return lua string
 	 */
-	public String callOO4String(final int indexNum, final Object... indexAndArgs) {
+	public static String callOO4String(final int indexNum, final Object... indexAndArgs) {
 		return callLua(true, indexNum, true, String.class, indexAndArgs);
 	}
 
@@ -816,8 +837,51 @@ public final class Lua {
 	 * @return 模板参数类型的对象
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T callOO4Object(final int indexNum, final Object... indexAndArgs) {
+	public static <T> T callOO4Object(final int indexNum, final Object... indexAndArgs) {
 		return (T) callLua(true, indexNum, true, null, indexAndArgs);
+	}
+
+	/**
+	 * Lua函数性能统计
+	 * 
+	 * @author Sid
+	 */
+	private static class Stat {
+		/** 调用次数 */
+		private int count;
+		/** 耗费时间 */
+		private long timecost;
+
+		/**
+		 * @param count
+		 *            调用次数
+		 * @param timecost
+		 *            耗费时间
+		 */
+		public Stat(final int count, final long timecost) {
+			this.count = count;
+			this.timecost = timecost;
+		}
+
+		@Override
+		public String toString() {
+			return "  调用次数：" + count + "  总耗时：" + timecost + "毫秒  平均耗时：" + timecost / (double) count + "毫秒";
+		}
+	}
+
+	/**
+	 * 输出Lua函数性能统计结果
+	 */
+	public static void funcchk() {
+		for (Entry<String, Stat> entry : statinfo.entrySet()) {
+			System.out.println(entry.getKey());
+			System.out.println(entry.getValue());
+		}
+	}
+
+	/** 清空统计性息 */
+	public static void resetStat() {
+		statinfo.clear();
 	}
 
 }
