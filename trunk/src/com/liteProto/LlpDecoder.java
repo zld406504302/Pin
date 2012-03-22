@@ -80,7 +80,7 @@ public class LlpDecoder extends FrameDecoder {
 		try {
 			msg = LlpJava.instance().getMessage(protocolName, frame.array());
 		} catch (Exception e) {
-			Channels.fireExceptionCaught(channel, new CorruptedFrameException("phrase llp message failed!"));
+			Channels.fireExceptionCaught(channel, new CorruptedFrameException("phrase llp message failed! " + protocolName));
 		}
 		return msg;
 	}
