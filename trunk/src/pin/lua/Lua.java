@@ -14,8 +14,6 @@ import org.keplerproject.luajava.LuaStateFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pin.core.Pin;
-
 /**
  * 封装对Lua的访问
  * 
