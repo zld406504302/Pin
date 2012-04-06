@@ -10,7 +10,6 @@
 	<classpathentry kind="lib" path="libs/logback-classic-1.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/logback-core-1.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/junit-4.10.jar"/>
-	<classpathentry kind="lib" path="libs/commons-pool-1.6.jar"/>
-	<classpathentry kind="lib" path="libs/luajava-1.1.jar"/>
+	<classpathentry kind="lib" path="libs/commons-pool-1.6.jar" sourcepath="E:/workspace-engine/Pin/trunk/libs-src/commons-pool-1.6-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

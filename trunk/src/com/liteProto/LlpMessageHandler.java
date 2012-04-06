@@ -11,7 +11,7 @@ import pin.net.protocol.ProtocolHandler;
 
 public abstract class LlpMessageHandler implements ProtocolHandler {
 
-	private ByteOrder order = ByteOrder.LITTLE_ENDIAN;
+	private ByteOrder order = ByteOrder.BIG_ENDIAN;
 
 	public LlpMessageHandler(ByteOrder order) {
 		this.order = order;

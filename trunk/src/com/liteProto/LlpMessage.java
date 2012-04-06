@@ -33,6 +33,16 @@ public class LlpMessage {
 					+ " is error.");
 		}
 	}
+	
+	public void write(String filedStr, boolean bool) {
+		int number = bool ? 1 : 0;
+		int ret = LlpJavaNative.llpWmesInt32(llpMesHandle, filedStr, number);
+		if (ret == 0) {
+			throw new RuntimeException("[LlpJavaNative WriteInt32]:  write message \""
+					+ name + "\" filed \"" + filedStr + "\" number: " + number
+					+ " is error.");
+		}
+	}
 
 	public void write(String filedStr, long number) {
 		int ret = LlpJavaNative.llpWmesInt64(llpMesHandle, filedStr, number);

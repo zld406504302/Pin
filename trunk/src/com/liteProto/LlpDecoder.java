@@ -25,7 +25,7 @@ public class LlpDecoder extends FrameDecoder {
 
 	@Override
 	protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
-		//logger.debug("new data coming...");
+		logger.debug("new data coming...");
 		if (buffer.readableBytes() < 2) {
 			return null;
 		}

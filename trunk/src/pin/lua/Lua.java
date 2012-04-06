@@ -14,6 +14,8 @@ import org.keplerproject.luajava.LuaStateFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pin.core.Pin;
+
 /**
  * 封装对Lua的访问
  * 
@@ -32,8 +34,13 @@ public final class Lua {
 	
 	public static final Logger logger = LoggerFactory.getLogger(Lua.class);
 	
+	static {
+		Pin.loadLibrary("luajava");
+	}
+	
 	/** 私有构造函数，不可实例化 */
 	private Lua() {
+		
 	}
 
 	/**
