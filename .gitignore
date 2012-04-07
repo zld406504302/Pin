@@ -1,2 +1,6 @@
 
 /trunk/bin
+/target
+/.classpath
+/.project
+/.settings
