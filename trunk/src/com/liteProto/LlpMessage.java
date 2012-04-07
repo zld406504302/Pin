@@ -35,7 +35,7 @@ public class LlpMessage {
 	}
 	
 	public void write(String filedStr, boolean bool) {
-		int number = bool ? 1 : 0;
+		int number = bool ? 0 : 1;
 		int ret = LlpJavaNative.llpWmesInt32(llpMesHandle, filedStr, number);
 		if (ret == 0) {
 			throw new RuntimeException("[LlpJavaNative WriteInt32]:  write message \""
