@@ -24,23 +24,20 @@ import pin.core.Pin;
  */
 public final class Lua {
 	/** 全局唯一LuaState */
-	protected static LuaState lua;
-
-	/** 程序脚本目录 */
-	private static File luaDirectory;
+	static LuaState lua;
 
 	/** 函数性能统计 */
 	private static HashMap<String, Stat> statinfo = new HashMap<String, Stat>();
-	
+
 	public static final Logger logger = LoggerFactory.getLogger(Lua.class);
-	
+
 	static {
 		Pin.loadLibrary("luajava");
 	}
-	
+
 	/** 私有构造函数，不可实例化 */
 	private Lua() {
-		
+
 	}
 
 	/**
@@ -50,10 +47,9 @@ public final class Lua {
 	 *            程序脚本目录
 	 */
 	public static void start(final File luaDirectory, final List<DefaultJavaFunc> javaFuncs) {
-		Lua.luaDirectory = luaDirectory;
 		init();
 		registerJavaFuncs(javaFuncs);
-		loadLua();
+		loadLua(luaDirectory);
 	}
 
 	private static void init() {
@@ -66,7 +62,7 @@ public final class Lua {
 		lua.checkStack(1024);
 		lua.openLibs();
 	}
-	
+
 	/**
 	 * 关闭Lua应用
 	 */
@@ -85,25 +81,25 @@ public final class Lua {
 	}
 
 	/**
-	 * 加载脚本，首先加载程序脚本目录，然后加载策划脚本资源目录
+	 * 加载脚本
 	 */
-	protected static void loadLua() {
+	private static void loadLua(File luaDirectory) {
 		logger.info("～～～加载脚本～～～");
 
-		if(lua.LdoFile(luaDirectory.getAbsolutePath() + File.separator + "load.lua") != 0) {
+		if (lua.LdoFile(luaDirectory.getAbsolutePath() + File.separator + "load.lua") != 0) {
 			logger.error("加载load.lua失败");
 			logger.info("～～～加载完成～～～");
 			return;
 		}
 
 		for (String directory : call4String("loadLua").split(";")) {
-			logger.info(Lua.luaDirectory .getPath()+ "/" + directory);
+			logger.info(luaDirectory.getPath() + "/" + directory);
 			loadDirectory(new File(luaDirectory.getAbsolutePath() + File.separator + directory));
 		}
 
 		logger.info("～～～加载完成～～～");
 	}
-
+	
 	/**
 	 * 加载指定目录中所有的脚本，先加载当前目录下的脚本，然后递归加载此子目录
 	 * 
@@ -119,17 +115,17 @@ public final class Lua {
 			}
 		}
 
-		for(File luaDirectory : directory.listFiles(directoryFilter))
-			if(!luaDirectory.isHidden())
+		for (File luaDirectory : directory.listFiles(directoryFilter))
+			if (!luaDirectory.isHidden())
 				loadDirectory(luaDirectory);
 	}
-	
+
 	private static FileFilter luaFilter = new FileFilter() {
 
 		public boolean accept(File file) {
 			return file.isFile() && file.getName().endsWith(".lua");
 		}
-		
+
 	};
 
 	private static FileFilter directoryFilter = new FileFilter() {
@@ -137,7 +133,7 @@ public final class Lua {
 		public boolean accept(File file) {
 			return file.isDirectory();
 		}
-		
+
 	};
 
 	/**
@@ -345,7 +341,7 @@ public final class Lua {
 				push(indexAndArgs[i]);
 
 			if (lua.pcall(indexAndArgs.length - indexNum - (oocall ? 0 : 1), result ? 1 : 0, stackTop + 1) != 0)
-				System.out.println(lua.getLuaObject(-1));
+				logger.error(lua.getLuaObject(-1).getString());
 			else if (result)
 				lobj = lua.getLuaObject(-1);
 

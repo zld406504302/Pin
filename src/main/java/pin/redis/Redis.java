@@ -20,10 +20,14 @@ public class Redis {
 		return instance;
 	}
 	
-	public void init(JedisPoolConfig config, String host) {
-		pool = new JedisPool(config, host);
+	public void init(JedisPoolConfig config, String host, int port) {
+		pool = new JedisPool(config, host, port);
 	}
 
+	public void init(JedisPoolConfig config, String host, int port, String passwd) {
+		pool = new JedisPool(config, host, port, 2000, passwd);
+	}
+	
 	public <T> T execute(RedisOP<T> op) {
 		Jedis jedis = null;
 		try {
