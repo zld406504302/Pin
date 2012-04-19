@@ -33,19 +33,6 @@ public class LlpJava {
 		}
 	}
 
-	/**
-	 * 此接口比较危险 尽量不要使用
-	 * 如果调用此方法所有使用关于此lpb文件的message对象都会抛出异常
-	 * @param lpbfile 要删除的lpb文件名
-	 * @throws Exception
-	 */
-	public void delMessage(String lpbfile) throws Exception {
-		if (LlpJavaNative.llpDelMes(env, lpbfile) == 0) {
-			throw new Exception("[LlpJavaNative DelMes]: delete message \""
-					+ lpbfile + "\" is error.");
-		}
-	}
-
 	public LlpMessage getMessage(String msg) throws Exception {
 		long handle = LlpJavaNative.llpMessageNew(env, msg);
 		if (handle == 0) {

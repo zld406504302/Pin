@@ -10,7 +10,6 @@ public class LlpJavaNative {
 	
 	// --------regedit/delete .lpb files
 	static native int llpRegMes(long env, String mesName);
-	static native int llpDelMes(long env, String mesName);
 	
 	// --------new/delete a message object
 	static native long llpMessageNew(long env, String mesName);

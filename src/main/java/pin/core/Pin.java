@@ -21,7 +21,7 @@ public class Pin {
 		if (!nativeFile.exists()) {
 			try {
 				// Extract native from classpath to native dir.
-				input = Pin.class.getResourceAsStream("/" + libFileName);
+				input = Pin.class.getResourceAsStream("/natives/" + libFileName);
 				if (input == null) {
 					throw new RuntimeException("cannot find native file: " + libFileName);
 				}
