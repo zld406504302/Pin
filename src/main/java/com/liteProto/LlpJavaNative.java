@@ -40,7 +40,7 @@ public class LlpJavaNative {
 	static native int    llpInMessage(byte[] in, long lms);
 	
 	static {
-		Pin.loadLibrary("llp");
+		Pin.loadLibrary("llpjava");
 	}
 
 	/*
