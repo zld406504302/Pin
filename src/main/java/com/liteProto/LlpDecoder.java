@@ -32,8 +32,8 @@ public class LlpDecoder extends FrameDecoder {
 		// 读取frame长度字段
 		short frameLength = buffer.getShort(buffer.readerIndex());
 
-		//logger.debug("frameLength: " + frameLength);
-		
+		// logger.debug("frameLength: " + frameLength);
+
 		if (frameLength <= 4) {
 			buffer.skipBytes(2);// 长度标识小于0 跳过长度
 			Channels.fireExceptionCaught(channel, new CorruptedFrameException("negative length field: " + frameLength));
@@ -48,7 +48,7 @@ public class LlpDecoder extends FrameDecoder {
 			return null;
 		}
 
-		//logger.debug("!!new msg received!!");
+		// logger.debug("!!new msg received!!");
 		LlpMessage msg = getLlpMessage(channel, buffer, buffer.readerIndex(), frameLength);
 		buffer.readerIndex(buffer.readerIndex() + frameLength + 2); // 完整读完一条消息length(short)
 																	// + data
@@ -70,7 +70,7 @@ public class LlpDecoder extends FrameDecoder {
 		// 读取UTF 协议名称
 		short strLen = buffer.getShort(index + 2);
 		String protocolName = getUTFStr(buffer, index + 4, strLen);
-		//logger.debug("protocolName: " + protocolName);
+		// logger.debug("protocolName: " + protocolName);
 		if (protocolName == null) {
 			Channels.fireExceptionCaught(channel, new CorruptedFrameException("uft encoding error!"));
 			return null;
@@ -109,5 +109,4 @@ public class LlpDecoder extends FrameDecoder {
 		ctx.getChannel().close();
 		logger.error("llp decode error!", e.getCause());
 	}
-
 }

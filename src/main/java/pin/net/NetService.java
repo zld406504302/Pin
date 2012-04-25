@@ -34,6 +34,6 @@ public class NetService {
         bootstrap.setOption("child.bufferFactory", channelBufferFactory);
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
-        logger.info("server started ...");
+        logger.info("server started on port " + port + "...");
     }
 }

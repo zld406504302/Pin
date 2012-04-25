@@ -13,7 +13,7 @@ public class Pin {
 
 	public static void loadLibrary(String libName) {
 		String lib = libName + (is64Bit ? "-64" : "");
-		String libFileName = lib + (isLinux ? ".so" : ".dll");
+		String libFileName = (isLinux ? "lib" : "") + lib + (isLinux ? ".so" : ".dll");
 		File nativeFile = new File(libFileName);
 
 		InputStream input = null;
