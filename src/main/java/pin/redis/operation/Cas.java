@@ -49,15 +49,15 @@ public abstract class Cas<Result> {
 					result = onExexcuted();
 				} else {
 					jedis.unwatch();
-					break; //这里不输出到达最大尝试次数日志
+					result = onFailed();
+					break;
 				}
 				
-				logger.error("reached max try time: " + maxTryTime);
+				if(i == maxTryTime - 1) {
+					logger.error("reached max try time:" + maxTryTime);
+				}
 				break;
 			}
-			
-			if(result == null)
-				result = onFailed();
 			
 			Redis.instance().returnResource(jedis);
 			return result;
