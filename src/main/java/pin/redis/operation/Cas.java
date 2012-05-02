@@ -49,8 +49,10 @@ public abstract class Cas<Result> {
 					result = onExexcuted();
 				} else {
 					jedis.unwatch();
+					break; //这里不输出到达最大尝试次数日志
 				}
 				
+				logger.error("reached max try time: " + maxTryTime);
 				break;
 			}
 			
