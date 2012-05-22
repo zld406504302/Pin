@@ -509,9 +509,7 @@ public class LuaObject
 					return "Java Function";
 				else
 					return null;
-			}
-			catch (LuaException e)
-			{
+			} catch (LuaException e) {
 				return null;
 			}
 		}

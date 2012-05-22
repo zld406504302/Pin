@@ -46,6 +46,10 @@ public class Redis {
 
 		return null;
 	}
+	
+	public <T> void asyncExecute(Execute<T> op) {
+		
+	}
 
 	public Jedis getResource() {
 		return pool.getResource();

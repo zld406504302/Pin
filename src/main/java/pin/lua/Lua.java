@@ -24,7 +24,7 @@ import pin.core.Pin;
  */
 public final class Lua {
 	/** 全局唯一LuaState */
-	static LuaState lua;
+	static LuaState lua = null;
 
 	/** 函数性能统计 */
 	private static HashMap<String, Stat> statinfo = new HashMap<String, Stat>();
@@ -53,11 +53,6 @@ public final class Lua {
 	}
 
 	private static void init() {
-		if (lua != null && !lua.isClosed())
-			synchronized (lua) {
-				lua.close();
-			}
-
 		lua = LuaStateFactory.newLuaState();
 		lua.checkStack(1024);
 		lua.openLibs();
@@ -232,7 +227,7 @@ public final class Lua {
 	public static <T> T getObject(final Class<T> c, final Object... indexs) {
 		LuaObject lobj = null;
 		synchronized (lua) {
-			if (lua == null || lua.isClosed())
+			if (lua.isClosed())
 				Thread.dumpStack();
 
 			int stackTop = lua.getTop();
@@ -300,7 +295,7 @@ public final class Lua {
 		LuaObject lobj = null;
 
 		synchronized (lua) {
-			if (lua == null || lua.isClosed())
+			if (lua.isClosed())
 				Thread.dumpStack();
 
 			int stackTop = lua.getTop();

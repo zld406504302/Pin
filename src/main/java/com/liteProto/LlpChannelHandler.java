@@ -26,7 +26,9 @@ public class LlpChannelHandler extends SimpleChannelHandler {
 			
 			if (handler == null) {
 				Channels.fireExceptionCaught(ctx.getChannel(), new RuntimeException("can not find handler for " + msg.getName()));
+				return;
 			}
+			
 			handler.preHandle(ctx);
 			handler.handleReceived(ctx, msg);
 			handler.handleReply(ctx);

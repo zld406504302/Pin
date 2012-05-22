@@ -177,6 +177,7 @@ public abstract class Handler {
 		} else {
 			RuntimeException e = new RuntimeException(this + " sendMessageAtTime() called with no mQueue");
 			logger.warn(TAG, e);
+			return false;
 		}
 		return mQueue.offer(msg);
 	}
