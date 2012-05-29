@@ -11,7 +11,7 @@ public interface ProtocolHandler {
 	 * @param ctx
 	 *            {@link ChannelHandlerContext} 上下文
 	 */
-	public void preHandle(ChannelHandlerContext ctx);
+	void preHandle(ChannelHandlerContext ctx);
 
 	/**
 	 * 接收处理
@@ -21,7 +21,7 @@ public interface ProtocolHandler {
 	 * @param msg
 	 *            接收到得消息
 	 */
-	public void handleReceived(ChannelHandlerContext ctx, LlpMessage msg);
+	void handleReceived(ChannelHandlerContext ctx, LlpMessage msg);
 
 	/**
 	 * 发送处理
@@ -31,5 +31,5 @@ public interface ProtocolHandler {
 	 * @throws Exception
 	 *             异常信息
 	 */
-	public void handleReply(ChannelHandlerContext ctx) throws Exception;
+	void handleReply(ChannelHandlerContext ctx) throws Exception;
 }

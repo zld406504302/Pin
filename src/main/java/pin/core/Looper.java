@@ -39,9 +39,9 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  */
-public class Looper {
+public final class Looper {
 	private static final String TAG = "Looper";
-	private static final Logger logger = LoggerFactory.getLogger(Looper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Looper.class);
 
 	// sThreadLocal.get() will return null unless you've called prepare().
 	static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<Looper>();
@@ -86,7 +86,7 @@ public class Looper {
 				msg.target.dispatchMessage(msg);
 
 				long threadTime = System.currentTimeMillis() - threadStart;
-				logger.debug("dispatchMessage cost time: " + threadTime);
+				LOGGER.debug("dispatchMessage cost time: " + threadTime);
 
 				msg.recycle();
 			}
@@ -115,29 +115,29 @@ public class Looper {
 	}
 
 	public void dump(String prefix) {
-		logger.info(prefix, this.toString());
-		logger.info(prefix, "mRun=" + mRun);
-		logger.info(prefix, "mThread=" + mThread);
-		logger.info(prefix, "mQueue=" + ((mQueue != null) ? mQueue : "(null"));
+		LOGGER.info(prefix, this.toString());
+		LOGGER.info(prefix, "mRun=" + mRun);
+		LOGGER.info(prefix, "mThread=" + mThread);
+		LOGGER.info(prefix, "mQueue=" + ((mQueue != null) ? mQueue : "(null"));
 		if (mQueue != null) {
 			synchronized (mQueue) {
 				Iterator<Message> it = mQueue.iterator();
 				while (it.hasNext()) {
-					logger.info(prefix, it.next().toString());
+					LOGGER.info(prefix, it.next().toString());
 				}
-				logger.info("(Total messages: " + mQueue.size() + ")");
+				LOGGER.info("(Total messages: " + mQueue.size() + ")");
 			}
 		}
 	}
 
-    public void quit() {
-        Message msg = Message.obtain();
-        // NOTE: By enqueueing directly into the message queue, the
-        // message is left with a null target.  This is how we know it is
-        // a quit message.
-        mQueue.offer(msg);
-    }
-    
+	public void quit() {
+		Message msg = Message.obtain();
+		// NOTE: By enqueueing directly into the message queue, the
+		// message is left with a null target. This is how we know it is
+		// a quit message.
+		mQueue.offer(msg);
+	}
+
 	public String toString() {
 		return "Looper{" + Integer.toHexString(System.identityHashCode(this)) + "}";
 	}

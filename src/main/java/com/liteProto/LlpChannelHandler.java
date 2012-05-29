@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import pin.net.protocol.ProtocolHandler;
 
-
-
 public class LlpChannelHandler extends SimpleChannelHandler {
 	private static final Logger logger = LoggerFactory.getLogger(LlpChannelHandler.class);
 	protected Map<String, ProtocolHandler> handlerMap = new HashMap<String, ProtocolHandler>();
@@ -23,12 +21,12 @@ public class LlpChannelHandler extends SimpleChannelHandler {
 		LlpMessage msg = (LlpMessage) e.getMessage();
 		try {
 			ProtocolHandler handler = handlerMap.get(msg.getName());
-			
+
 			if (handler == null) {
 				Channels.fireExceptionCaught(ctx.getChannel(), new RuntimeException("can not find handler for " + msg.getName()));
 				return;
 			}
-			
+
 			handler.preHandle(ctx);
 			handler.handleReceived(ctx, msg);
 			handler.handleReply(ctx);

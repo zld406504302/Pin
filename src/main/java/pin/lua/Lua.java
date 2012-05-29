@@ -29,7 +29,7 @@ public final class Lua {
 	/** 函数性能统计 */
 	private static HashMap<String, Stat> statinfo = new HashMap<String, Stat>();
 
-	public static final Logger logger = LoggerFactory.getLogger(Lua.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(Lua.class);
 
 	static {
 		Pin.loadLibrary("luajava");
@@ -45,6 +45,8 @@ public final class Lua {
 	 * 
 	 * @param luaDirectory
 	 *            程序脚本目录
+	 * @param javaFuncs
+	 *            java函数
 	 */
 	public static void start(final File luaDirectory, final List<DefaultJavaFunc> javaFuncs) {
 		init();
@@ -52,6 +54,9 @@ public final class Lua {
 		loadLua(luaDirectory);
 	}
 
+	/**
+	 * 初始化lua
+	 */
 	private static void init() {
 		lua = LuaStateFactory.newLuaState();
 		lua.checkStack(1024);
@@ -64,11 +69,18 @@ public final class Lua {
 	public static synchronized void close() {
 
 		synchronized (lua) {
-			if (!lua.isClosed())
+			if (!lua.isClosed()) {
 				lua.close();
+			}
 		}
 	}
 
+	/**
+	 * 向lua注册java函数
+	 * 
+	 * @param javaFuncs
+	 *            java函数
+	 */
 	private static void registerJavaFuncs(final List<DefaultJavaFunc> javaFuncs) {
 		for (DefaultJavaFunc jf : javaFuncs) {
 			jf.register();
@@ -77,24 +89,27 @@ public final class Lua {
 
 	/**
 	 * 加载脚本
+	 * 
+	 * @param luaDirectory
+	 *            lua文件夹
 	 */
 	private static void loadLua(File luaDirectory) {
-		logger.info("～～～加载脚本～～～");
+		LOGGER.info("～～～加载脚本～～～");
 
 		if (lua.LdoFile(luaDirectory.getAbsolutePath() + File.separator + "load.lua") != 0) {
-			logger.error("加载load.lua失败");
-			logger.info("～～～加载完成～～～");
+			LOGGER.error("加载load.lua失败");
+			LOGGER.info("～～～加载完成～～～");
 			return;
 		}
 
 		for (String directory : call4String("loadLua").split(";")) {
-			logger.info(luaDirectory.getPath() + "/" + directory);
+			LOGGER.info(luaDirectory.getPath() + "/" + directory);
 			loadDirectory(new File(luaDirectory.getAbsolutePath() + File.separator + directory));
 		}
 
-		logger.info("～～～加载完成～～～");
+		LOGGER.info("～～～加载完成～～～");
 	}
-	
+
 	/**
 	 * 加载指定目录中所有的脚本，先加载当前目录下的脚本，然后递归加载此子目录
 	 * 
@@ -104,15 +119,17 @@ public final class Lua {
 	private static void loadDirectory(final File directory) {
 		for (File luaScript : directory.listFiles(luaFilter)) {
 			if (lua.LdoFile(luaScript.getAbsolutePath()) != 0) {
-				logger.error("加载【" + luaScript.getAbsolutePath() + "】失败！");
+				LOGGER.error("加载【" + luaScript.getAbsolutePath() + "】失败！");
 			} else {
-				logger.info("加载【" + luaScript.getAbsolutePath() + "】成功！");
+				LOGGER.info("加载【" + luaScript.getAbsolutePath() + "】成功！");
 			}
 		}
 
-		for (File luaDirectory : directory.listFiles(directoryFilter))
-			if (!luaDirectory.isHidden())
+		for (File luaDirectory : directory.listFiles(directoryFilter)) {
+			if (!luaDirectory.isHidden()) {
 				loadDirectory(luaDirectory);
+			}
+		}
 	}
 
 	private static FileFilter luaFilter = new FileFilter() {
@@ -138,16 +155,17 @@ public final class Lua {
 	 *            目标数据
 	 */
 	public static void push(final Object obj) {
-		if (obj == null)
+		if (obj == null) {
 			lua.pushNil();
-		else if (obj instanceof String)
+		} else if (obj instanceof String) {
 			lua.pushString((String) obj);
-		else if (obj instanceof Number)
+		} else if (obj instanceof Number) {
 			lua.pushNumber(((Number) obj).doubleValue());
-		else if (obj instanceof Boolean)
+		} else if (obj instanceof Boolean) {
 			lua.pushBoolean((Boolean) obj);
-		else
+		} else {
 			lua.pushJavaObject(obj);
+		}
 	}
 
 	/**
@@ -164,44 +182,48 @@ public final class Lua {
 	@SuppressWarnings("unchecked")
 	private static <T> T castData(final Class<T> c, final LuaObject lobj) {
 		if (c == null) {
-			if (lobj.isNil())
+			if (lobj.isNil()) {
 				return null;
-			else
+			} else {
 				try {
 					return (T) lobj.getObject();
 				} catch (LuaException e1) {
 					throw new ClassCastException(lobj + " is not java object");
 				}
+			}
 		}
 
 		if (c == Boolean.class) {
-			if (lobj.isNil())
+			if (lobj.isNil()) {
 				return c.cast(false);
+			}
 
-			if (lobj.isBoolean())
+			if (lobj.isBoolean()) {
 				return c.cast(lobj.getBoolean());
+			}
 
 			return c.cast(true);
 		}
 
-		if (lobj.isNil())
+		if (lobj.isNil()) {
 			return null;
+		}
 
-		if (c == Byte.class && lobj.isNumber())
+		if (c == Byte.class && lobj.isNumber()) {
 			return c.cast((byte) lobj.getNumber());
-		else if (c == Short.class && lobj.isNumber())
+		} else if (c == Short.class && lobj.isNumber()) {
 			return c.cast((short) lobj.getNumber());
-		else if (c == Integer.class && lobj.isNumber())
+		} else if (c == Integer.class && lobj.isNumber()) {
 			return c.cast((int) lobj.getNumber());
-		else if (c == Long.class && lobj.isNumber())
+		} else if (c == Long.class && lobj.isNumber()) {
 			return c.cast((long) lobj.getNumber());
-		else if (c == Float.class && lobj.isNumber())
+		} else if (c == Float.class && lobj.isNumber()) {
 			return c.cast((float) lobj.getNumber());
-		else if (c == Double.class && lobj.isNumber())
+		} else if (c == Double.class && lobj.isNumber()) {
 			return c.cast(lobj.getNumber());
-		else if (c == String.class && lobj.isString())
+		} else if (c == String.class && lobj.isString()) {
 			return c.cast(lobj.getString());
-		else if (lobj.isUserdata() || lobj.isJavaObject()) {
+		} else if (lobj.isUserdata() || lobj.isJavaObject()) {
 			try {
 				return c.cast(lobj.getObject());
 			} catch (LuaException e) {
@@ -227,8 +249,9 @@ public final class Lua {
 	public static <T> T getObject(final Class<T> c, final Object... indexs) {
 		LuaObject lobj = null;
 		synchronized (lua) {
-			if (lua.isClosed())
+			if (lua.isClosed()) {
 				Thread.dumpStack();
+			}
 
 			int stackTop = lua.getTop();
 
@@ -272,8 +295,9 @@ public final class Lua {
 	 * @return Lua函数的返回值
 	 */
 	private static <T> T callLua(final boolean oocall, final int indexNum, final boolean result, final Class<T> c, final Object... indexAndArgs) {
-		if (indexAndArgs.length <= indexNum)
+		if (indexAndArgs.length <= indexNum) {
 			throw new IllegalArgumentException("参数长度必须大于索引数目！");
+		}
 
 		if (!(indexAndArgs[indexNum] instanceof String)) {
 			StringBuilder builder = new StringBuilder();
@@ -282,8 +306,9 @@ public final class Lua {
 			builder.append("返回值 = " + result + "/n");
 			builder.append("期待返回类型 = " + c + "/n");
 			builder.append("可变参数部分：");
-			for (Object arg : indexAndArgs)
+			for (Object arg : indexAndArgs) {
 				builder.append(arg + " ");
+			}
 
 			throw new IllegalArgumentException("函数名必须为String！" + builder);
 		}
@@ -295,8 +320,9 @@ public final class Lua {
 		LuaObject lobj = null;
 
 		synchronized (lua) {
-			if (lua.isClosed())
+			if (lua.isClosed()) {
 				Thread.dumpStack();
+			}
 
 			int stackTop = lua.getTop();
 
@@ -321,24 +347,28 @@ public final class Lua {
 				StringBuilder builder = new StringBuilder();
 
 				builder.append("_G");
-				for (int i = 1; i <= indexNum; i++)
+				for (int i = 1; i <= indexNum; i++) {
 					builder.append("[" + indexAndArgs[i - 1] + "]");
+				}
 				builder.append(".");
 				builder.append(function);
 				builder.append("属性不是函数，无法调用");
 				throw new IllegalArgumentException(builder.toString());
 			}
 
-			if (oocall)
+			if (oocall) {
 				lua.pushValue(-2);
+			}
 
-			for (int i = indexNum + 1; i < indexAndArgs.length; i++)
+			for (int i = indexNum + 1; i < indexAndArgs.length; i++) {
 				push(indexAndArgs[i]);
+			}
 
-			if (lua.pcall(indexAndArgs.length - indexNum - (oocall ? 0 : 1), result ? 1 : 0, stackTop + 1) != 0)
-				logger.error(lua.getLuaObject(-1).getString());
-			else if (result)
+			if (lua.pcall(indexAndArgs.length - indexNum - (oocall ? 0 : 1), result ? 1 : 0, stackTop + 1) != 0) {
+				LOGGER.error(lua.getLuaObject(-1).getString());
+			} else if (result) {
 				lobj = lua.getLuaObject(-1);
+			}
 
 			lua.setTop(stackTop);
 		}

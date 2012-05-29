@@ -15,25 +15,37 @@ public class NetService {
 	private int port;
 	private ChannelPipelineFactory channelPipelineFactory;
 	private ChannelBufferFactory channelBufferFactory;
+
+	/**
+	 * 创建网络服务
+	 * 
+	 * @param port
+	 *            监听端口
+	 * @param channelPipelineFactory
+	 *            {@link ChannelPipelineFactory}
+	 * @param channelBufferFactory
+	 *            {@link ChannelBufferFactory}
+	 */
 	public NetService(int port, ChannelPipelineFactory channelPipelineFactory, ChannelBufferFactory channelBufferFactory) {
 		this.port = port;
 		this.channelPipelineFactory = channelPipelineFactory;
 		this.channelBufferFactory = channelBufferFactory;
 	}
-	
-    public void run() {
-        // Configure the server.
-        ServerBootstrap bootstrap = new ServerBootstrap(
-                new NioServerSocketChannelFactory(
-                        Executors.newCachedThreadPool(),
-                        Executors.newCachedThreadPool()));
 
-        // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(channelPipelineFactory);
+	/**
+	 * 开启网络服务
+	 */
+	public void run() {
+		// Configure the server.
+		ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
+				Executors.newCachedThreadPool()));
 
-        bootstrap.setOption("child.bufferFactory", channelBufferFactory);
-        // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
-        logger.info("server started on port " + port + "...");
-    }
+		// Set up the pipeline factory.
+		bootstrap.setPipelineFactory(channelPipelineFactory);
+
+		bootstrap.setOption("child.bufferFactory", channelBufferFactory);
+		// Bind and start to accept incoming connections.
+		bootstrap.bind(new InetSocketAddress(port));
+		logger.info("server started on port " + port + "...");
+	}
 }

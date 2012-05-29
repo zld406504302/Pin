@@ -5,15 +5,33 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Pin {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-	public static final boolean isLinux = System.getProperty("os.name").contains("Linux");
-	public static final boolean is64Bit = System.getProperty("os.arch").equals("amd64");
-	public static final long startTime = System.currentTimeMillis();
+public final class Pin {
 
+	public static final boolean IS_LINUX = System.getProperty("os.name").contains("Linux");
+	public static final boolean IS_64BIT = System.getProperty("os.arch").equals("amd64");
+	public static final long START_TIME = System.currentTimeMillis();
+	private static final Logger LOGGER = LoggerFactory.getLogger(Pin.class);
+	private static final int BUFFER_SIZE = 4096;
+
+	/**
+	 * 私有构造函数
+	 */
+	private Pin() {
+
+	}
+
+	/**
+	 * 根据不同系统加载库文件 如果库文件不存在则从jar包中解压出来
+	 * 
+	 * @param libName
+	 *            库名称
+	 */
 	public static void loadLibrary(String libName) {
-		String lib = libName + (is64Bit ? "-64" : "");
-		String libFileName = (isLinux ? "lib" : "") + lib + (isLinux ? ".so" : ".dll");
+		String lib = libName + (IS_64BIT ? "-64" : "");
+		String libFileName = (IS_LINUX ? "lib" : "") + lib + (IS_LINUX ? ".so" : ".dll");
 		File nativeFile = new File(libFileName);
 
 		InputStream input = null;
@@ -27,22 +45,26 @@ public class Pin {
 				}
 
 				output = new FileOutputStream(nativeFile);
-				byte[] buffer = new byte[4096];
+				byte[] buffer = new byte[BUFFER_SIZE];
 				while (true) {
 					int length = input.read(buffer);
-					if (length == -1)
+					if (length == -1) {
 						break;
+					}
 					output.write(buffer, 0, length);
 				}
 				input.close();
 				output.close();
 			} catch (IOException ex) {
+				LOGGER.error("error on extracting libs", ex);
 			} finally {
 				try {
-					if (input != null)
+					if (input != null) {
 						input.close();
-					if (output != null)
+					}
+					if (output != null) {
 						output.close();
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

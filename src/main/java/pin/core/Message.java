@@ -1,6 +1,6 @@
 package pin.core;
 
-public class Message {
+public final class Message {
 	/**
 	 * User-defined message code so that the recipient can identify what this
 	 * message is about. Each {@link Handler} has its own name-space for message
@@ -44,12 +44,18 @@ public class Message {
 
 	Message next;
 
-	private static final byte[] sPoolSync = new byte[0];
+	/**
+	 * 用来加锁的变量
+	 */
+	private static final byte[] SPOOLSYNC = new byte[0];
 	private static Message sPool;
 	private static int sPoolSize = 0;
 
 	private static final int MAX_POOL_SIZE = 50;
 
+	/**
+	 * 私有构造函数
+	 */
 	private Message() {
 
 	}
@@ -57,9 +63,11 @@ public class Message {
 	/**
 	 * Return a new Message instance from the global pool. Allows us to avoid
 	 * allocating new objects in many cases.
+	 * 
+	 * @return {@link Message}
 	 */
 	public static Message obtain() {
-		synchronized (sPoolSync) {
+		synchronized (SPOOLSYNC) {
 			if (sPool != null) {
 				Message m = sPool;
 				sPool = m.next;
@@ -223,7 +231,7 @@ public class Message {
 	public void recycle() {
 		clearForRecycle();
 
-		synchronized (sPoolSync) {
+		synchronized (SPOOLSYNC) {
 			if (sPoolSize < MAX_POOL_SIZE) {
 				next = sPool;
 				sPool = this;
@@ -236,6 +244,9 @@ public class Message {
 	 * Make this message like o. Performs a shallow copy of the data field. Does
 	 * not copy the linked list fields, nor the timestamp or target/callback of
 	 * the original message.
+	 * 
+	 * @param o
+	 *            {@link Message}
 	 */
 	public void copyFrom(Message o) {
 		this.what = o.what;
@@ -246,22 +257,32 @@ public class Message {
 
 	/**
 	 * Return the targeted delivery time of this message, in milliseconds.
+	 * 
+	 * @return the targeted delivery time of this message
 	 */
 	public long getWhen() {
 		return when;
 	}
 
+	/**
+	 * 设置要发送到的{@link Handler}
+	 * 
+	 * @param target
+	 *            {@link Handler}
+	 */
 	public void setTarget(Handler target) {
 		this.target = target;
 	}
 
 	/**
-	 * Retrieve the a {@link android.os.Handler Handler} implementation that
-	 * will receive this message. The object must implement
-	 * {@link android.os.Handler#handleMessage(android.os.Message)
+	 * Retrieve the a {@link pin.core.Handler Handler} implementation that will
+	 * receive this message. The object must implement
+	 * {@link pin.core.Handler#handleMessage(pin.core.Message)
 	 * Handler.handleMessage()}. Each Handler has its own name-space for message
 	 * codes, so you do not need to worry about yours conflicting with other
 	 * handlers.
+	 * 
+	 * @return {@link Handler}
 	 */
 	public Handler getTarget() {
 		return target;
@@ -273,19 +294,24 @@ public class Message {
 	 * <em>target</em> {@link Handler} that is receiving this Message to
 	 * dispatch it. If not set, the message will be dispatched to the receiving
 	 * Handler's {@link Handler#handleMessage(Message Handler.handleMessage())}.
+	 * 
+	 * @return callback object
 	 */
 	public Runnable getCallback() {
 		return callback;
 	}
-	
-    /**
-     * Sends this Message to the Handler specified by {@link #getTarget}.
-     * Throws a null pointer exception if this field has not been set.
-     */
-	public void sendToTarget() {
-        target.sendMessage(this);
-    }
 
+	/**
+	 * Sends this Message to the Handler specified by {@link #getTarget}. Throws
+	 * a null pointer exception if this field has not been set.
+	 */
+	public void sendToTarget() {
+		target.sendMessage(this);
+	}
+
+	/**
+	 * 回收之前对消息进行清理
+	 */
 	void clearForRecycle() {
 		what = 0;
 		arg1 = 0;
@@ -296,6 +322,7 @@ public class Message {
 		callback = null;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 
@@ -307,7 +334,7 @@ public class Message {
 
 		b.append(" now=");
 		b.append(System.currentTimeMillis());
-		
+
 		if (arg1 != 0) {
 			b.append(" arg1=");
 			b.append(arg1);

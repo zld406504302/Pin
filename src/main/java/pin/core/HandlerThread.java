@@ -8,7 +8,7 @@ public class HandlerThread extends Thread {
 	private int mPriority;
 	private long mTid = -1;
 	private Looper mLooper;
-	
+
 	public HandlerThread(String name) {
 		super(name);
 		mPriority = currentThread().getPriority();
@@ -37,57 +37,60 @@ public class HandlerThread extends Thread {
 	public void run() {
 		mTid = currentThread().getId();
 		Looper.prepare();
-        synchronized (this) {
-            mLooper = Looper.myLooper();
-            notifyAll();
-        }
+		synchronized (this) {
+			mLooper = Looper.myLooper();
+			notifyAll();
+		}
 		onLooperPrepared();
 		Looper.loop();
 		mTid = -1;
 	}
-	
-    /**
-     * This method returns the Looper associated with this thread. If this thread not been started
-     * or for any reason is isAlive() returns false, this method will return null. If this thread 
-     * has been started, this method will block until the looper has been initialized.  
-     * @return The looper.
-     */
-    public Looper getLooper() {
-        if (!isAlive()) {
-            return null;
-        }
-        
-        // If the thread has been started, wait until the looper has been created.
-        synchronized (this) {
-            while (isAlive() && mLooper == null) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-        return mLooper;
-    }
-    
-    /**
-     * Ask the currently running looper to quit.  If the thread has not
-     * been started or has finished (that is if {@link #getLooper} returns
-     * null), then false is returned.  Otherwise the looper is asked to
-     * quit and true is returned.
-     */
-    public boolean quit() {
-        Looper looper = getLooper();
-        if (looper != null) {
-            looper.quit();
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Returns the identifier of this thread.
-     */
-    public long getThreadId() {
-        return mTid;
-    }
+
+	/**
+	 * This method returns the Looper associated with this thread. If this
+	 * thread not been started or for any reason is isAlive() returns false,
+	 * this method will return null. If this thread has been started, this
+	 * method will block until the looper has been initialized.
+	 * 
+	 * @return The looper.
+	 */
+	public Looper getLooper() {
+		if (!isAlive()) {
+			return null;
+		}
+
+		// If the thread has been started, wait until the looper has been
+		// created.
+		synchronized (this) {
+			while (isAlive() && mLooper == null) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+		return mLooper;
+	}
+
+	/**
+	 * Ask the currently running looper to quit. If the thread has not been
+	 * started or has finished (that is if {@link #getLooper} returns null),
+	 * then false is returned. Otherwise the looper is asked to quit and true is
+	 * returned.
+	 */
+	public boolean quit() {
+		Looper looper = getLooper();
+		if (looper != null) {
+			looper.quit();
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the identifier of this thread.
+	 */
+	public long getThreadId() {
+		return mTid;
+	}
 }

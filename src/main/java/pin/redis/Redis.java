@@ -8,28 +8,68 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-public class Redis {
+public final class Redis {
 
+	private static final int DEFAULT_TIME_OUT = 2000;
 	private static Redis instance = new Redis();
 	private JedisPool pool = null;
 	private static Logger logger = LoggerFactory.getLogger(Redis.class);
 
+	/**
+	 * 私有构造函数
+	 */
 	private Redis() {
 
 	}
 
+	/**
+	 * 获取redis实例
+	 * 
+	 * @return redis实例
+	 */
 	public static Redis instance() {
 		return instance;
 	}
 
+	/**
+	 * 初始化redis服务
+	 * 
+	 * @param config
+	 *            redis配置
+	 * @param host
+	 *            主机名
+	 * @param port
+	 *            端口
+	 */
 	public void init(JedisPoolConfig config, String host, int port) {
 		pool = new JedisPool(config, host, port);
 	}
 
+	/**
+	 * 初始化redis服务
+	 * 
+	 * @param config
+	 *            config redis配置
+	 * @param host
+	 *            host 主机名
+	 * @param port
+	 *            port 端口
+	 * @param passwd
+	 *            redis密码
+	 */
 	public void init(JedisPoolConfig config, String host, int port, String passwd) {
-		pool = new JedisPool(config, host, port, 2000, passwd);
+		pool = new JedisPool(config, host, port, DEFAULT_TIME_OUT, passwd);
 	}
 
+	/**
+	 * 执行redis操作
+	 * 
+	 * @param op
+	 *            redis操作
+	 * @param <T>
+	 *            返回的类型
+	 * @return 返回值
+	 */
 	public static <T> T execute(Execute<T> op) {
 		Jedis jedis = null;
 		try {
@@ -46,19 +86,44 @@ public class Redis {
 
 		return null;
 	}
-	
+
+	/**
+	 * 异步执行redis操作
+	 * 
+	 * @param op
+	 *            redis操作
+	 * @param <T>
+	 *            返回的类型
+	 */
 	public <T> void asyncExecute(Execute<T> op) {
-		
+		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * 获得redis连接
+	 * 
+	 * @return {@link Jedis}
+	 */
 	public Jedis getResource() {
 		return pool.getResource();
 	}
 
+	/**
+	 * 归还redis连接资源
+	 * 
+	 * @param jedis
+	 *            {@link Jedis}
+	 */
 	public void returnResource(Jedis jedis) {
 		pool.returnResource(jedis);
 	}
 
+	/**
+	 * 归还出错的reids连接资源
+	 * 
+	 * @param jedis
+	 *            {@link Jedis}
+	 */
 	public void returnBrokenResource(Jedis jedis) {
 		pool.returnBrokenResource(jedis);
 	}

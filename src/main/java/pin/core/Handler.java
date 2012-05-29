@@ -185,25 +185,23 @@ public abstract class Handler {
 	private final void handleCallback(Message message) {
 		message.callback.run();
 	}
-	
-    @Override
-    public String toString() {
-        return "Handler (" + getClass().getName() + ") {"
-        + Integer.toHexString(System.identityHashCode(this))
-        + "}";
-    }
 
-    // if we can get rid of this method, the handler need not remember its loop
-    // we could instead export a getMessageQueue() method... 
-    public final Looper getLooper() {
-        return mLooper;
-    }
-    
-    public final void dump(String prefix) {
-        if (mLooper == null) {
-            logger.info(prefix, "looper uninitialized");
-        } else {
-            mLooper.dump(prefix + "->mLooper ");
-        }
-    }
+	@Override
+	public String toString() {
+		return "Handler (" + getClass().getName() + ") {" + Integer.toHexString(System.identityHashCode(this)) + "}";
+	}
+
+	// if we can get rid of this method, the handler need not remember its loop
+	// we could instead export a getMessageQueue() method...
+	public final Looper getLooper() {
+		return mLooper;
+	}
+
+	public final void dump(String prefix) {
+		if (mLooper == null) {
+			logger.info(prefix, "looper uninitialized");
+		} else {
+			mLooper.dump(prefix + "->mLooper ");
+		}
+	}
 }
