@@ -12,7 +12,7 @@ public class Redis {
 
 	private static Redis instance = new Redis();
 	private JedisPool pool = null;
-	private Logger logger = LoggerFactory.getLogger(Redis.class);
+	private static Logger logger = LoggerFactory.getLogger(Redis.class);
 
 	private Redis() {
 
@@ -30,16 +30,16 @@ public class Redis {
 		pool = new JedisPool(config, host, port, 2000, passwd);
 	}
 
-	public <T> T execute(Execute<T> op) {
+	public static <T> T execute(Execute<T> op) {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();
+			jedis = instance().pool.getResource();
 			T result = op.execute(jedis);
-			pool.returnResource(jedis); // 不使用finally方式
+			instance().pool.returnResource(jedis); // 不使用finally方式
 			return result;
 		} catch (Exception e) {
-			if (pool != null) {
-				pool.returnBrokenResource(jedis);
+			if (instance().pool != null) {
+				instance().pool.returnBrokenResource(jedis);
 			}
 			logger.error("error on execute redis operation: ", e);
 		}
