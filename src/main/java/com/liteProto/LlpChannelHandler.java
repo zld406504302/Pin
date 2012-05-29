@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import pin.net.protocol.ProtocolHandler;
 
 public class LlpChannelHandler extends SimpleChannelHandler {
-	private static final Logger logger = LoggerFactory.getLogger(LlpChannelHandler.class);
+	private static Logger logger = LoggerFactory.getLogger(LlpChannelHandler.class);
 	protected Map<String, ProtocolHandler> handlerMap = new HashMap<String, ProtocolHandler>();
 
 	@Override
@@ -36,8 +36,13 @@ public class LlpChannelHandler extends SimpleChannelHandler {
 		}
 	}
 
-	public void regProtocolHandler(String key, ProtocolHandler handler) {
-		handlerMap.put(key, handler);
+	/**
+	 * 协议名与{@link ProtocolHandler} 关联
+	 * @param protocolName 协议名
+	 * @param handler {@link ProtocolHandler}
+	 */
+	public void regProtocolHandler(String protocolName, ProtocolHandler handler) {
+		handlerMap.put(protocolName, handler);
 	}
 
 }

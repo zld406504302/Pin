@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LlpDecoder extends FrameDecoder {
 
-	private static final Logger logger = LoggerFactory.getLogger(LlpDecoder.class);
+	private static Logger logger = LoggerFactory.getLogger(LlpDecoder.class);
 
 	@Override
 	protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
@@ -35,7 +35,7 @@ public class LlpDecoder extends FrameDecoder {
 		// logger.debug("frameLength: " + frameLength);
 
 		if (frameLength <= 4) {
-			buffer.skipBytes(2);// 长度标识小于0 跳过长度
+			buffer.skipBytes(2); // 长度标识小于0 跳过长度
 			Channels.fireExceptionCaught(channel, new CorruptedFrameException("negative length field: " + frameLength));
 		}
 
@@ -58,6 +58,8 @@ public class LlpDecoder extends FrameDecoder {
 	/**
 	 * 从ChannelBuffer中获取LlpMessage ChannelBuffer中内容格式为 msgName(utf) + llpMsg
 	 * 
+	 * @param channel
+	 *            {@link Channel}
 	 * @param buffer
 	 *            网络发送过来的LlpMessage数据
 	 * @param index
@@ -89,6 +91,13 @@ public class LlpDecoder extends FrameDecoder {
 		return msg;
 	}
 
+	/**
+	 * 读取UTF格式string
+	 * @param buffer {@link ChannelBuffer}
+	 * @param index 读取的开始位置
+	 * @param strLen string长度
+	 * @return 读取的字符串
+	 */
 	private String getUTFStr(ChannelBuffer buffer, int index, int strLen) {
 		if (strLen > 0) {
 			byte[] data = new byte[strLen];
