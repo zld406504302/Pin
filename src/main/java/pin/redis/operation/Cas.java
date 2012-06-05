@@ -33,7 +33,7 @@ public abstract class Cas<Result> {
 	public abstract boolean onCheck(Jedis jedis);
 
 	/**
-	 * check成功执行set事物
+	 * check成功执行set事务
 	 * 
 	 * @param trans
 	 *            redis 事务 {@link Transaction}
