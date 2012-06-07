@@ -88,11 +88,11 @@ public class TestEvent {
 	@Test
 	public void test() {
 		TestSender testSender = new TestSender();
-		EventSource testSource = new EventSource(testSender);
+		EventSource testSource = new EventSource();
 		
 		testSource.addListener(new TestEventListener());
 		
-		testSource.fireEvent(new TestEvetnArgs());
+		testSource.fireEvent(testSender, new TestEvetnArgs());
 		
 		Assert.assertEquals("Hello World!", testSender.toString());
 	}
