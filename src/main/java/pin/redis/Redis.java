@@ -4,15 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pin.redis.operation.Execute;
+import pin.spring.Spring;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 public final class Redis {
 
-	private static final int DEFAULT_TIME_OUT = 2000;
 	private static Redis instance = new Redis();
-	private JedisPool pool = null;
+	private JedisPool pool = Spring.instance().getBean("jedisPool", JedisPool.class);
 	private static Logger logger = LoggerFactory.getLogger(Redis.class);
 
 	/**
@@ -29,36 +28,6 @@ public final class Redis {
 	 */
 	public static Redis instance() {
 		return instance;
-	}
-
-	/**
-	 * 初始化redis服务
-	 * 
-	 * @param config
-	 *            redis配置
-	 * @param host
-	 *            主机名
-	 * @param port
-	 *            端口
-	 */
-	public void init(JedisPoolConfig config, String host, int port) {
-		pool = new JedisPool(config, host, port);
-	}
-
-	/**
-	 * 初始化redis服务
-	 * 
-	 * @param config
-	 *            config redis配置
-	 * @param host
-	 *            host 主机名
-	 * @param port
-	 *            port 端口
-	 * @param passwd
-	 *            redis密码
-	 */
-	public void init(JedisPoolConfig config, String host, int port, String passwd) {
-		pool = new JedisPool(config, host, port, DEFAULT_TIME_OUT, passwd);
 	}
 
 	/**
