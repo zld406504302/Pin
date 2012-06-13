@@ -16,7 +16,7 @@
 		<constructor-arg name="host" value="192.168.0.246"/>
 		<constructor-arg name="port" value="6380"/>
 		<constructor-arg name="timeout" value="2000"/>
-		<constructor-arg name="password" value="3o7\\zR5hQ8Zs"/>
+		<constructor-arg name="password" value="pwd"/>
 	</bean>
 	
 </beans>
