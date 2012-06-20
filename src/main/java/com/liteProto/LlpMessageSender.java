@@ -7,9 +7,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 
-import pin.net.protocol.ProtocolHandler;
-
-public abstract class LlpMessageHandler implements ProtocolHandler {
+public final class LlpMessageSender {
 
 	private ByteOrder order = ByteOrder.BIG_ENDIAN;
 
@@ -17,14 +15,14 @@ public abstract class LlpMessageHandler implements ProtocolHandler {
 	 * 指定ChannelBuffer 字节序
 	 * @param order {@link ByteOrder}
 	 */
-	public LlpMessageHandler(ByteOrder order) {
+	public LlpMessageSender(ByteOrder order) {
 		this.order = order;
 	}
 
 	/**
 	 * 默认构造函数
 	 */
-	public LlpMessageHandler() {
+	public LlpMessageSender() {
 
 	}
 
