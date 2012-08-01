@@ -25,6 +25,7 @@ public class HandlerThread extends Thread {
 	public HandlerThread(String name, int priority) {
 		super(name);
 		mPriority = priority;
+		setPriority(mPriority);
 	}
 
 	/**
@@ -34,6 +35,7 @@ public class HandlerThread extends Thread {
 	protected void onLooperPrepared() {
 	}
 
+	@Override
 	public void run() {
 		mTid = currentThread().getId();
 		Looper.prepare();

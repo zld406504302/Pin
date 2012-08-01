@@ -1,6 +1,8 @@
 package pin.core;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,8 +174,46 @@ public abstract class Handler {
 	 *         looper processing the message queue is exiting.
 	 */
 	public final boolean sendMessage(Message msg) {
+		return sendMessageAtTime(msg, now());
+	}
+
+	public final boolean sendMessageDelayed(Message msg, long delay, TimeUnit unit) {
+		return sendMessageAtTime(msg, triggerTime(delay, unit));
+	}
+	
+	public final boolean sendMessageAtFixedRate(Message msg, long initialDelay, long period, TimeUnit unit) {
+		if (msg == null || unit == null) {
+			throw new NullPointerException();
+		}
+		
+		if (period <= 0) {
+			throw new IllegalArgumentException();
+		}
+		
+		msg.period = unit.toNanos(period);
+		sendMessageAtTime(msg, triggerTime(initialDelay, unit));
+		return true;
+	}
+	
+	public final boolean sendMessageAtFixedDelay(Message msg, long initialDelay, long delay, TimeUnit unit) {
+		if (msg == null || unit == null) {
+			throw new NullPointerException();
+		}
+		
+		if (delay <= 0) {
+			throw new IllegalArgumentException();
+		}
+		
+		msg.period = unit.toNanos(-delay);
+		sendMessageAtTime(msg, triggerTime(initialDelay, unit));
+		return true;
+	}
+
+	public boolean sendMessageAtTime(Message msg, long uptimeNanos) {
 		if (mQueue != null) {
 			msg.target = this;
+			msg.time = uptimeNanos;
+			msg.when = now();
 		} else {
 			RuntimeException e = new RuntimeException(this + " sendMessageAtTime() called with no mQueue");
 			logger.warn(TAG, e);
@@ -181,7 +221,45 @@ public abstract class Handler {
 		}
 		return mQueue.offer(msg);
 	}
+	
+	/**
+	 * Returns the trigger time of a delayed action.
+	 */
+	private long triggerTime(long delay, TimeUnit unit) {
+		return triggerTime(unit.toNanos((delay < 0) ? 0 : delay));
+	}
 
+	/**
+	 * Returns the trigger time of a delayed action.
+	 */
+	long triggerTime(long delay) {
+		return now() + ((delay < (Long.MAX_VALUE >> 1)) ? delay : overflowFree(delay));
+	}
+
+	/**
+	 * Constrains the values of all delays in the queue to be within
+	 * Long.MAX_VALUE of each other, to avoid overflow in compareTo. This may
+	 * occur if a task is eligible to be dequeued, but has not yet been, while
+	 * some other task is added with a delay of Long.MAX_VALUE.
+	 */
+	private long overflowFree(long delay) {
+		Delayed head = (Delayed) mQueue.peek();
+		if (head != null) {
+			long headDelay = head.getDelay(TimeUnit.NANOSECONDS);
+			if (headDelay < 0 && (delay - headDelay < 0)) {
+				delay = Long.MAX_VALUE + headDelay;
+			}
+		}
+		return delay;
+	}
+	
+	/**
+	 * Returns current nanosecond time.
+	 */
+	private final long now() {
+		return System.nanoTime();
+	}
+	
 	private final void handleCallback(Message message) {
 		message.callback.run();
 	}

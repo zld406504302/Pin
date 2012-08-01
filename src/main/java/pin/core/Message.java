@@ -1,6 +1,9 @@
 package pin.core;
 
-public final class Message {
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
+
+public final class Message implements Delayed {
 	/**
 	 * User-defined message code so that the recipient can identify what this
 	 * message is about. Each {@link Handler} has its own name-space for message
@@ -8,41 +11,45 @@ public final class Message {
 	 * handlers.
 	 */
 	public int what;
-
+	
 	/**
-	 * arg1 and arg2 are lower-cost alternatives to using
-	 * {@link #setData(Bundle) setData()} if you only need to store a few
-	 * integer values.
+	 * An arbitrary integer to send to the recipient. 
 	 */
 	public int arg1;
 
 	/**
-	 * arg1 and arg2 are lower-cost alternatives to using
-	 * {@link #setData(Bundle) setData()} if you only need to store a few
-	 * integer values.
+	 * An arbitrary integer to send to the recipient. 
 	 */
 	public int arg2;
 
 	/**
-	 * An arbitrary object to send to the recipient. When using
-	 * {@link Messenger} to send the message across processes this can only be
-	 * non-null if it contains a Parcelable of a framework class (not one
-	 * implemented by the application). For other data transfer use
-	 * {@link #setData}.
-	 * 
-	 * <p>
-	 * Note that Parcelable objects here are not supported prior to the
-	 * {@link android.os.Build.VERSION_CODES#FROYO} release.
+	 * An arbitrary object to send to the recipient. 
 	 */
 	public Object obj;
-
+	
+	/** The time the task is added to message queue */
 	long when;
+	
+	/** The time the task is enabled to execute in nanoTime units */
+	public long time;
+	
+	/**
+	 * Period in nanoseconds for repeating messages. A positive value indicates
+	 * fixed-rate execution. A negative value indicates fixed-delay
+	 * execution. A value of 0 indicates a non-repeating task.
+	 */
+	public long period;
 
 	Handler target;
 
 	Runnable callback;
 
 	Message next;
+	
+	/**
+	 * Index into delay queue, to support faster cancellation.
+	 */
+	int heapIndex;
 
 	/**
 	 * 用来加锁的变量
@@ -318,6 +325,8 @@ public final class Message {
 		arg2 = 0;
 		obj = null;
 		when = 0;
+		time = 0;
+		period = 0;
 		target = null;
 		callback = null;
 	}
@@ -328,12 +337,6 @@ public final class Message {
 
 		b.append("{ what=");
 		b.append(what);
-
-		b.append(" when=");
-		b.append(when);
-
-		b.append(" now=");
-		b.append(System.currentTimeMillis());
 
 		if (arg1 != 0) {
 			b.append(" arg1=");
@@ -349,9 +352,58 @@ public final class Message {
 			b.append(" obj=");
 			b.append(obj);
 		}
+		
+		b.append(" when=");
+		b.append(when);
+		
+		b.append(" time=");
+		b.append(time);
+		
+		b.append(" period=");
+		b.append(period);
+
+		b.append(" now=");
+		b.append(System.nanoTime());
 
 		b.append(" }");
 
 		return b.toString();
 	}
+
+	@Override
+	public int compareTo(Delayed other) {
+		if (other == this) {
+			return 0;
+		}
+		if (other instanceof Message) {
+			Message x = (Message) other;
+			long diff = time - x.time;
+			if (diff < 0) {
+				return -1;
+			} else if (diff > 0) {
+				return 1;
+//			} else if (sequenceNumber < x.sequenceNumber) {
+//				return -1;
+			} else {
+				return 1;
+			}
+		}
+		long d = (getDelay(TimeUnit.NANOSECONDS) - other.getDelay(TimeUnit.NANOSECONDS));
+		return (d == 0) ? 0 : ((d < 0) ? -1 : 1);
+	}
+
+	@Override
+	public long getDelay(TimeUnit unit) {
+		return unit.convert(time - System.nanoTime(), TimeUnit.NANOSECONDS);
+	}
+	
+	/**
+	 * Returns true if this is a periodic (not a one-shot) action.
+	 * 
+	 * @return true if periodic
+	 */
+	public boolean isPeriodic() {
+		return period != 0;
+	}
+	
 }
