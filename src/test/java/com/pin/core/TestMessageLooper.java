@@ -31,14 +31,14 @@ public class TestMessageLooper {
 		
 		handler.sendMessageAtFixedDelay(Message.obtain(handler, 10, 11, 12), 7, 4, TimeUnit.SECONDS);
 		
-		while(true) {
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+//		while(true) {
+//			try {
+//				Thread.sleep(10000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
 	class TestHandler extends Handler {
