@@ -42,7 +42,7 @@ public class LlpMessage {
 			throw new NullPointerException();
 		}
 
-		int number = bool ? 0 : 1;
+		int number = bool ? 1 : 0;
 		int ret = LlpJavaNative.llpWmesInt32(llpMesHandle, filedStr, number);
 		if (ret == 0) {
 			throw new RuntimeException("[LlpJavaNative WriteInt32]:  write message \"" + name + "\" filed \"" + filedStr + "\" number: " + number
