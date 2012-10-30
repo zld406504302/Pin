@@ -54,12 +54,12 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>
@@ -96,6 +96,11 @@
 			<artifactId>fastjson</artifactId>
 			<version>1.1.22</version>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.2.1</version>
+        </dependency>
 	</dependencies>
 
 	<build>

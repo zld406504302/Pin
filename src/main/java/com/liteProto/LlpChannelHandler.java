@@ -21,6 +21,8 @@ public class LlpChannelHandler extends SimpleChannelHandler {
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
 		LlpMessage msg = (LlpMessage) e.getMessage();
 		try {
+
+
 			ProtocolHandler handler = null;
 			if(handlerMap.containsKey(msg.getName())) {
 				handler = handlerMap.get(msg.getName());
