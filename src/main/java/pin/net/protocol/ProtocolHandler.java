@@ -1,6 +1,6 @@
 package pin.net.protocol;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.Channel;
 
 import com.liteProto.LlpMessage;
 
@@ -8,28 +8,24 @@ public interface ProtocolHandler {
 	/**
 	 * 预处理
 	 * 
-	 * @param ctx
-	 *            {@link ChannelHandlerContext} 上下文
+	 * @param channelId
+	 *            Returns the unique String ID of this channel.
 	 */
-	void preHandle(ChannelHandlerContext ctx);
+	void preHandle(Channel channel);
 
 	/**
 	 * 接收处理
 	 * 
-	 * @param ctx
-	 *            {@link ChannelHandlerContext} 上下文
 	 * @param msg
 	 *            接收到得消息
 	 */
-	void handleReceived(ChannelHandlerContext ctx, LlpMessage msg);
+	void handleReceived(LlpMessage msg);
 
 	/**
 	 * 发送处理
 	 * 
-	 * @param ctx
-	 *            {@link ChannelHandlerContext} 上下文
 	 * @throws Exception
 	 *             异常信息
 	 */
-	void handleReply(ChannelHandlerContext ctx) throws Exception;
+	void handleReply() throws Exception;
 }

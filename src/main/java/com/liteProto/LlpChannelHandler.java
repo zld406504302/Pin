@@ -16,7 +16,7 @@ import pin.spring.Spring;
 public class LlpChannelHandler extends SimpleChannelHandler {
 	private static Logger logger = LoggerFactory.getLogger(LlpChannelHandler.class);
 	protected Map<String, ProtocolHandler> handlerMap = new HashMap<String, ProtocolHandler>();
-	
+
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
 		LlpMessage msg = (LlpMessage) e.getMessage();
@@ -24,10 +24,10 @@ public class LlpChannelHandler extends SimpleChannelHandler {
 
 
 			ProtocolHandler handler = null;
-			if(handlerMap.containsKey(msg.getName())) {
+			if (handlerMap.containsKey(msg.getName())) {
 				handler = handlerMap.get(msg.getName());
 			} else {
-				//Spring工厂得到Handler对象
+				// Spring工厂得到Handler对象
 				handler = Spring.instance().getBean(msg.getName(), ProtocolHandler.class);
 				handlerMap.put(msg.getName(), handler);
 			}
@@ -37,9 +37,9 @@ public class LlpChannelHandler extends SimpleChannelHandler {
 				return;
 			}
 
-			handler.preHandle(ctx);
-			handler.handleReceived(ctx, msg);
-			handler.handleReply(ctx);
+			handler.preHandle(ctx.getChannel());
+			handler.handleReceived(msg);
+			handler.handleReply();
 			logger.debug("msg handled! :" + msg.getName());
 		} finally {
 			msg.destory();
