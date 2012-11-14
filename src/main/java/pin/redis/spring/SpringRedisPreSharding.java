@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,13 +23,15 @@ public class SpringRedisPresharding {
 
 
     public RedisTemplate getRedisTemplate(String key) {
-        return instances.get((int) (hashFunction.hash(key) % instances.size()));
+        String hashTag = getHashTag(key);
+        return instances.get((int) (hashFunction.hash(hashTag) % instances.size()));
     }
 
     public RedisTemplate getRedisTemplate(String key, String instanceName) {
+        String hashTag = getHashTag(key);
         List<RedisTemplate> instances = namedInstances.get(instanceName);
         if (instances != null) {
-            return instances.get((int) (hashFunction.hash(key) % instances.size()));
+            return instances.get((int) (hashFunction.hash(hashTag) % instances.size()));
         } else {
             return null;
         }
@@ -43,5 +47,17 @@ public class SpringRedisPresharding {
 
     public void setNamedInstances(Map<String, List<RedisTemplate>> namedInstances) {
         this.namedInstances = namedInstances;
+    }
+
+    private String getHashTag(String key) {
+        String regx = "\\[(.*?)\\]";
+
+        Pattern p = Pattern.compile(regx);
+        Matcher m = p.matcher(key);
+        if (m.find()) {
+            return m.group(1);
+        } else {
+            return key;
+        }
     }
 }

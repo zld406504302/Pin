@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="data_0"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6380" p:use-pool="true"/>
+
+    <bean id="template_data0" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_0"/>
+
+    <bean id="data_1"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6381" p:use-pool="true"/>
+
+    <bean id="template_data1" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_1"/>
+
+    <bean id="data_2"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6382" p:use-pool="true"/>
+
+    <bean id="template_data2" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_2"/>
+
+    <bean id="data_3"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6383" p:use-pool="true"/>
+
+    <bean id="template_data3" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_3"/>
+
+    <bean id="data_4"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6384" p:use-pool="true"/>
+
+    <bean id="template_data4" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_4"/>
+
+    <bean id="data_5"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6385" p:use-pool="true"/>
+
+    <bean id="template_data5" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_5"/>
+
+    <bean id="data_6"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6386" p:use-pool="true"/>
+
+    <bean id="template_data6" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_6"/>
+
+    <bean id="data_7"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="127.0.0.1" p:port="6387" p:use-pool="true"/>
+
+    <bean id="template_data7" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connection-factory-ref="data_7"/>
+
+    <bean id="luaHashFunction" class="pin.hash.LuaHash" />
+
+    <bean id="redisPreshardingCluster" class="pin.redis.spring.SpringRedisPresharding">
+        <property name="instances">
+            <list>
+                <ref bean="template_data0" />
+                <ref bean="template_data1" />
+                <ref bean="template_data2" />
+                <ref bean="template_data3" />
+                <ref bean="template_data4" />
+                <ref bean="template_data5" />
+                <ref bean="template_data6" />
+                <ref bean="template_data7" />
+            </list>
+        </property>
+
+        <property name="namedInstances">
+            <map>
+                <entry key="main">
+                    <list>
+                        <ref bean="template_data0" />
+                    </list>
+                </entry>
+            </map>
+
+        </property>
+
+        <property name="hashFunction" ref="luaHashFunction"/>
+    </bean>
+
+</beans>
