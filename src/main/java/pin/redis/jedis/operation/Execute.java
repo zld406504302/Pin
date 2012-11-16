@@ -1,4 +1,4 @@
-package pin.redis.operation;
+package pin.redis.jedis.operation;
 
 import redis.clients.jedis.Jedis;
 

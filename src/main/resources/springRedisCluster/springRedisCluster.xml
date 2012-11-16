@@ -62,7 +62,7 @@
 
     <bean id="luaHashFunction" class="pin.hash.LuaHash" />
 
-    <bean id="redisPreshardingCluster" class="pin.redis.spring.SpringRedisPresharding">
+    <bean id="redisPreshardingCluster" class="pin.redis.spring.SpringRedisPreshardingCluster">
         <property name="instances">
             <list>
                 <ref bean="template_data0" />

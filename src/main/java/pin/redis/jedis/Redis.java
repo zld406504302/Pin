@@ -1,9 +1,8 @@
-package pin.redis;
+package pin.redis.jedis;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import pin.redis.operation.Execute;
+import pin.redis.jedis.operation.Execute;
 import pin.spring.Spring;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

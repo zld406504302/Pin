@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import pin.redis.spring.SpringRedisPresharding;
+import pin.redis.spring.SpringRedisPreshardingCluster;
 import pin.spring.Spring;
 
 /**
@@ -31,8 +31,8 @@ public class TestSpringRedisPresharding {
         String testKey6 = "[bbb]aaa";
         String testKey7 = "aaa[bbb]aaa";
 
-        SpringRedisPresharding redisPresharding = Spring.instance().getBean("redisPreshardingCluster", SpringRedisPresharding.class);
-        RedisTemplate template = redisPresharding.getRedisTemplate(testKey1);
+        SpringRedisPreshardingCluster redisPresharding = Spring.instance().getBean("redisPreshardingCluster", SpringRedisPreshardingCluster.class);
+        StringRedisTemplate template = redisPresharding.getRedisTemplate(testKey1);
 
         template.opsForValue().set("test", "result");
 
@@ -43,11 +43,11 @@ public class TestSpringRedisPresharding {
         Assert.assertEquals("result", result);
 
 
-        RedisTemplate templateKey5 = redisPresharding.getRedisTemplate(testKey5);
-        RedisTemplate templateKey6 = redisPresharding.getRedisTemplate(testKey6);
-        RedisTemplate templateKey7 = redisPresharding.getRedisTemplate(testKey7);
+        StringRedisTemplate templateKey5 = redisPresharding.getRedisTemplate(testKey5);
+        StringRedisTemplate templateKey6 = redisPresharding.getRedisTemplate(testKey6);
+        StringRedisTemplate templateKey7 = redisPresharding.getRedisTemplate(testKey7);
 
-        templateKey5.opsForValue().set("testKey5", templateKey5);
+        templateKey5.opsForValue().set("testKey5", testKey5);
         String resultKey6 = (String)templateKey6.opsForValue().get("testKey5");
         String resultKey7 = (String)templateKey7.opsForValue().get("testKey5");
 
