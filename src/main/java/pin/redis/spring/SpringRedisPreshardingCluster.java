@@ -26,6 +26,10 @@ public class SpringRedisPreshardingCluster {
         return instances.get((int) (hashFunction.hash(hashTag) % instances.size()));
     }
 
+    public StringRedisTemplate getRedisTemplate(String key, String hashTag) {
+        return instances.get((int) (hashFunction.hash(hashTag) % instances.size()));
+    }
+
     public StringRedisTemplate getNamedRedisTemplate(String key, String instanceName) {
         String hashTag = getHashTag(key);
         List<StringRedisTemplate> instances = namedInstances.get(instanceName);
@@ -76,7 +80,7 @@ public class SpringRedisPreshardingCluster {
         Pattern p = Pattern.compile(regx);
         Matcher m = p.matcher(key);
         if (m.find()) {
-            return m.group(1);
+            return m.group(m.groupCount());
         } else {
             return key;
         }
