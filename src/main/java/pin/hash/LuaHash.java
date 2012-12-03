@@ -17,6 +17,6 @@ public class LuaHash implements StringHashFunction {
         for (int i = len; i >= step; i -= step) {
             hash = hash ^ ((hash << 5) + (hash >> 2) + str.charAt(i - 1));
         }
-        return hash;
+        return hash < 0 ? -hash : hash;
     }
 }

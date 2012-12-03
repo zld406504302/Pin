@@ -134,6 +134,14 @@ public class LlpMessage {
 		return LlpJavaNative.llpRmesInt32(llpMesHandle, filedStr, alInx);
 	}
 
+    public boolean readBoolean(String filedStr) {
+        if (filedStr == null) {
+            throw new NullPointerException();
+        }
+
+        return readInt(filedStr, 0) == 1;
+    }
+
 	public int readInt(String filedStr) {
 		if (filedStr == null) {
 			throw new NullPointerException();
