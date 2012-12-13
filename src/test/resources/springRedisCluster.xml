@@ -6,42 +6,42 @@
 
     <bean id="data_0"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
-          p:host-name="127.0.0.1" p:port="6380" p:use-pool="true"/>
+          p:host-name="127.0.0.1" p:port="16380" p:use-pool="true"/>
 
     <bean id="template_data0" class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connection-factory-ref="data_0"/>
 
     <bean id="data_1"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
-          p:host-name="127.0.0.1" p:port="6381" p:use-pool="true"/>
+          p:host-name="127.0.0.1" p:port="16381" p:use-pool="true"/>
 
     <bean id="template_data1" class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connection-factory-ref="data_1"/>
 
     <bean id="data_2"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
-          p:host-name="127.0.0.1" p:port="6382" p:use-pool="true"/>
+          p:host-name="127.0.0.1" p:port="16382" p:use-pool="true"/>
 
     <bean id="template_data2" class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connection-factory-ref="data_2"/>
 
     <bean id="data_3"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
-          p:host-name="127.0.0.1" p:port="6383" p:use-pool="true"/>
+          p:host-name="127.0.0.1" p:port="16383" p:use-pool="true"/>
 
     <bean id="template_data3" class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connection-factory-ref="data_3"/>
 
     <bean id="data_4"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
-          p:host-name="127.0.0.1" p:port="6384" p:use-pool="true"/>
+          p:host-name="127.0.0.1" p:port="16384" p:use-pool="true"/>
 
     <bean id="template_data4" class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connection-factory-ref="data_4"/>
 
     <bean id="data_5"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
-          p:host-name="127.0.0.1" p:port="6385" p:use-pool="true"/>
+          p:host-name="127.0.0.1" p:port="16385" p:use-pool="true"/>
 
     <bean id="template_data5" class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connection-factory-ref="data_5"/>
