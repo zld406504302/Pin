@@ -1,8 +1,9 @@
-package com.liteProto;
+package pin.net.socket;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.liteProto.LlpMessage;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.MessageEvent;
@@ -10,12 +11,11 @@ import org.jboss.netty.channel.SimpleChannelHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pin.net.protocol.ProtocolHandler;
 import pin.spring.Spring;
 
 public class LlpChannelHandler extends SimpleChannelHandler {
 	private static Logger logger = LoggerFactory.getLogger(LlpChannelHandler.class);
-	protected Map<String, ProtocolHandler> handlerMap = new HashMap<String, ProtocolHandler>();
+	protected Map<String, ProtocolHandler> handlerMap = new HashMap<>();
 
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {

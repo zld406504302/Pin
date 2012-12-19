@@ -1,4 +1,4 @@
-package pin.net.protocol;
+package pin.net.socket;
 
 import org.jboss.netty.channel.Channel;
 

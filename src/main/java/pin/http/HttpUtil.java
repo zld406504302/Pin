@@ -15,11 +15,11 @@ import java.io.InputStream;
  * Time: 下午6:06
  */
 public class HttpUtil {
-    private static HttpClient client = new DefaultHttpClient();
 
     public static HttpResponseInfo httpGet(String url) throws IOException {
         HttpGet get = new HttpGet(url);
         try {
+            HttpClient client = new DefaultHttpClient();
             HttpResponse response = client.execute(get);
             HttpResponseInfo info = new HttpResponseInfo();
             if (isStatusSuccess(response.getStatusLine().getStatusCode())) {
