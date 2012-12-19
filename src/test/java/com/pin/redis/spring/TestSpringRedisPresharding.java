@@ -2,6 +2,7 @@ package com.pin.redis.spring;
 
 import junit.framework.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,6 +19,7 @@ public class TestSpringRedisPresharding {
 		Spring.instance().init("springRedisCluster.xml");
 	}
 
+    @Ignore
 	@Test
 	public void testSpringRedisPresharding() throws Exception {
 		String testKey1 = "aaaaaa";

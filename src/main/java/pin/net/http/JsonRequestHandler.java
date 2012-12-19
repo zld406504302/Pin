@@ -31,12 +31,12 @@ public class JsonRequestHandler extends SimpleChannelUpstreamHandler {
         HttpRequest request = (HttpRequest) e.getMessage();
 
         boolean keepAlive = isKeepAlive(request);
+        try {
+            //解析HTTP请求
+            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
+            Map<String, List<String>> params = queryStringDecoder.getParameters();
+            String reqJson = params.get("reqJson").get(0);
 
-        //解析HTTP请求
-        QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
-        Map<String, List<String>> params = queryStringDecoder.getParameters();
-        String reqJson = params.get("reqJson").get(0);
-        if (reqJson != null) {
             String pathWithSlash = queryStringDecoder.getPath();
             String path = pathWithSlash.substring(1, pathWithSlash.length());
 
@@ -57,8 +57,10 @@ public class JsonRequestHandler extends SimpleChannelUpstreamHandler {
 
             //处理回复
             writeResponse(jsonResponse, e.getChannel(), keepAlive);
-        } else {
-            writeResponse("出错啦!", e.getChannel(), keepAlive);
+
+        } catch (Exception ex) {
+            writeResponse("出错啦!", e.getChannel(), false);
+            throw new RuntimeException(ex);
         }
     }
 
