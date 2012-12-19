@@ -1,7 +1,8 @@
-package com.liteProto;
+package pin.net.socket;
 
 import java.nio.ByteOrder;
 
+import com.liteProto.LlpMessage;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;

@@ -1,6 +1,5 @@
 package pin.redis.spring;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pin.hash.StringHashFunction;
 
