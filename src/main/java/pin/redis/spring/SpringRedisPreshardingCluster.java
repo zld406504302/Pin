@@ -1,7 +1,5 @@
 package pin.redis.spring;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import pin.hash.StringHashFunction;
@@ -19,25 +17,21 @@ public class SpringRedisPreshardingCluster {
 	private List<StringRedisTemplate> instances;
 	private Map<String, List<StringRedisTemplate>> namedInstances;
 	private StringHashFunction hashFunction;
-	private Logger logger = LoggerFactory.getLogger(SpringRedisPreshardingCluster.class);
 
 	public StringRedisTemplate getRedisTemplate(String key) {
 		String hashTag = getHashTag(key);
-		logger.debug("hashTag : " + hashTag + "###################");
-		long hashTagNumber = hashFunction.hash(hashTag);
-		logger.debug("hashTagNumber : " + hashTagNumber + "***********************");
-		return instances.get((int) (hashTagNumber % instances.size()));
+		return getInstance(instances, hashFunction.hash(hashTag));
 	}
 
 	public StringRedisTemplate getRedisTemplate(String key, String hashTag) {
-		return instances.get((int) (hashFunction.hash(hashTag) % instances.size()));
+		return getInstance(instances, hashFunction.hash(hashTag));
 	}
 
 	public StringRedisTemplate getNamedRedisTemplate(String key, String instanceName) {
 		String hashTag = getHashTag(key);
 		List<StringRedisTemplate> instances = namedInstances.get(instanceName);
 		if (instances != null) {
-			return instances.get((int) (hashFunction.hash(hashTag) % instances.size()));
+			return getInstance(instances, hashFunction.hash(hashTag));
 		} else {
 			return null;
 		}
@@ -86,6 +80,16 @@ public class SpringRedisPreshardingCluster {
 			return m.group(m.groupCount());
 		} else {
 			return key;
+		}
+	}
+
+	private StringRedisTemplate getInstance(List<StringRedisTemplate> instances, long hashValue) {
+		int size = instances.size();
+		int index = (int) hashValue % size;
+		if (index >= 0) {
+			return instances.get(index);
+		} else {
+			return instances.get(size + index);
 		}
 	}
 }
