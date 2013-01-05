@@ -1,14 +1,14 @@
 package pin.net;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
-
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBufferFactory;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
 
 public class NetService {
 	private Logger logger = LoggerFactory.getLogger(NetService.class);
@@ -43,7 +43,12 @@ public class NetService {
 		// Set up the pipeline factory.
 		bootstrap.setPipelineFactory(channelPipelineFactory);
 
+		bootstrap.setOption("reuseAddress", true);
+        bootstrap.setOption("child.keepAlive", true);
+        bootstrap.setOption("child.tcpNoDelay", true);
+		bootstrap.setOption("child.soLinger", 5); //默认等待5秒 超过5秒强制关闭连接
 		bootstrap.setOption("child.bufferFactory", channelBufferFactory);
+
 		// Bind and start to accept incoming connections.
 		bootstrap.bind(new InetSocketAddress(port));
 		logger.info("server started on port " + port + "...");

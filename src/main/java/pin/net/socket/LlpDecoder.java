@@ -1,7 +1,5 @@
 package pin.net.socket;
 
-import java.io.UnsupportedEncodingException;
-
 import com.liteProto.LlpJava;
 import com.liteProto.LlpMessage;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -14,6 +12,8 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * 协议格式为: frameLength(short) + msgName(utf) + llpMsg
@@ -119,5 +119,6 @@ public class LlpDecoder extends FrameDecoder {
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
 		ctx.getChannel().close();
 		logger.error("llp decode error!", e.getCause());
+        super.exceptionCaught(ctx, e);
 	}
 }
