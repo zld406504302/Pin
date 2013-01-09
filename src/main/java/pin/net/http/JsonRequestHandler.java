@@ -85,6 +85,8 @@ public class JsonRequestHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
+        response.setContent(ChannelBuffers.copiedBuffer("出错啦!", CharsetUtil.UTF_8));
+        response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
         // Write the response.
         ChannelFuture future = ctx.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);
